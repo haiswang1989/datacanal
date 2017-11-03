@@ -1,0 +1,135 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>datacanal</groupId>
+	<artifactId>datacanal</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<packaging>pom</packaging>
+	
+	
+	<modules>
+		<module>datacanal-instance</module>
+		<module>datacanal-center</module>
+		<module>datacanal-sink</module>
+		<module>datacanal-serializer</module>
+		<module>datacanal-common</module>
+		<module>datacanal-instance-manager</module>
+	</modules>
+	
+	<properties>
+       <spring.version>4.0.5.RELEASE</spring.version>
+       <druid.version>1.0.18</druid.version>
+       <replicator.version>1.6.0</replicator.version>
+       <mysql.jdbc.version>5.1.31</mysql.jdbc.version>
+       <lombok.version>1.16.18</lombok.version>
+       <zkclient.version>0.8</zkclient.version>
+       <testng.version>6.10</testng.version>
+       <netty.version>5.0.0.Alpha2</netty.version>
+       <slf4j.version>1.7.25</slf4j.version>
+       <log4j.version>1.2.17</log4j.version>
+       <guava.version>17.0</guava.version>
+       <fastjson.version>1.2.38</fastjson.version>
+    </properties>
+    
+    <dependencyManagement>
+        <dependencies>
+			<dependency>
+			    <groupId>com.alibaba</groupId>
+			    <artifactId>fastjson</artifactId>
+			    <version>${fastjson.version}</version>
+			</dependency>
+            
+            <dependency>
+	            <groupId>com.google.guava</groupId>
+	            <artifactId>guava</artifactId>
+	            <version>${guava.version}</version>
+	        </dependency>
+        
+            <dependency>
+	            <groupId>org.slf4j</groupId>
+	            <artifactId>slf4j-api</artifactId>
+	            <version>${slf4j.version}</version>
+	        </dependency> 
+	        
+	        <dependency>
+	            <groupId>org.slf4j</groupId>
+	            <artifactId>slf4j-log4j12</artifactId>
+	            <version>${slf4j.version}</version>
+	        </dependency>
+	        
+	        <dependency>
+	            <groupId>log4j</groupId>
+	            <artifactId>log4j</artifactId>
+	            <version>${log4j.version}</version>
+	        </dependency>
+            
+			<dependency>
+			    <groupId>io.netty</groupId>
+			    <artifactId>netty-all</artifactId>
+			    <version>${netty.version}</version>
+			</dependency>
+        
+			<dependency>
+			    <groupId>org.testng</groupId>
+			    <artifactId>testng</artifactId>
+			    <version>${testng.version}</version>
+			    <scope>test</scope>
+			</dependency>
+        
+            <dependency>
+	            <groupId>com.101tec</groupId>
+	            <artifactId>zkclient</artifactId>
+	            <version>${zkclient.version}</version>
+	        </dependency>
+            
+            <dependency>
+	            <groupId>com.zendesk</groupId>
+	            <artifactId>open-replicator</artifactId>
+	            <version>${replicator.version}</version>
+	        </dependency>
+            
+            <dependency>
+	            <groupId>mysql</groupId>
+	            <artifactId>mysql-connector-java</artifactId>
+	            <version>${mysql.jdbc.version}</version>
+	        </dependency>
+            
+            <dependency>
+	            <groupId>org.projectlombok</groupId>
+	            <artifactId>lombok</artifactId>
+	            <version>${lombok.version}</version>
+	            <scope>provided</scope>
+	        </dependency>
+	        
+	        <dependency>
+	            <groupId>org.springframework</groupId>
+	            <artifactId>spring-core</artifactId>
+	            <version>${spring.version}</version>
+	        </dependency>
+	        
+	        <dependency>
+	            <groupId>org.springframework</groupId>
+	            <artifactId>spring-jdbc</artifactId>
+	            <version>${spring.version}</version>
+	        </dependency>
+	        
+	        <dependency>
+	            <groupId>org.springframework</groupId>
+	            <artifactId>spring-beans</artifactId>
+	            <version>${spring.version}</version>
+	        </dependency>
+	                
+	        <dependency>
+	            <groupId>com.alibaba</groupId>
+	            <artifactId>druid</artifactId>
+	            <version>${druid.version}</version>
+	        </dependency>
+	        
+			<dependency>
+			    <groupId>org.springframework</groupId>
+			    <artifactId>spring-context</artifactId>
+			    <version>${spring.version}</version>
+			</dependency>
+				        
+        </dependencies>
+    </dependencyManagement>
+</project>
