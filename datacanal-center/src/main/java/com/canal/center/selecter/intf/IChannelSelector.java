@@ -1,8 +1,5 @@
 package com.canal.center.selecter.intf;
 
-import java.util.Map;
-
-import io.netty.channel.Channel;
 
 /**
  * 选择运行instance的结点的选择器
@@ -12,6 +9,6 @@ import io.netty.channel.Channel;
  */
 public interface IChannelSelector {
     
-    public Map.Entry<String, Channel> select();
+    public String select();
     
 }

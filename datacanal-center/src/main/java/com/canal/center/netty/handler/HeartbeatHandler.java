@@ -39,6 +39,7 @@ public class HeartbeatHandler extends ChannelHandlerAdapter {
             ChannelHeartbeatCache cache = ChannelHeartbeatCache.instance();
             cache.getNodeIdToChannel().put(nodeId, channel);
             cache.getNodeIdToBeatTime().put(nodeId, lastHeartbeatTime);
+            cache.getOnlineNodes().add(nodeId);
         } else {
             ctx.fireChannelRead(msg);
         }

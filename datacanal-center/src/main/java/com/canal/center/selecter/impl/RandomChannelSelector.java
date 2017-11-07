@@ -1,13 +1,8 @@
 package com.canal.center.selecter.impl;
 
-import java.util.ArrayList;
-import java.util.Map;
+import java.util.HashSet;
 import java.util.Random;
-import java.util.concurrent.ConcurrentHashMap;
-
 import com.canal.center.cache.ChannelHeartbeatCache;
-
-import io.netty.channel.Channel;
 
 /**
  * 随机channel选择器
@@ -24,17 +19,15 @@ public class RandomChannelSelector extends AbstractChannelSelector {
     }
     
     @Override
-    public Map.Entry<String, Channel> select() {
-        ConcurrentHashMap<String, Channel> nodeIdToChannel = ChannelHeartbeatCache.instance().getNodeIdToChannel();
-        ArrayList<Map.Entry<String, Channel>> channels = new ArrayList<>(nodeIdToChannel.entrySet());
-        int length = channels.size();
-        if(0 == length) {
+    public String select() {
+        HashSet<String> nodeIds = ChannelHeartbeatCache.instance().getOnlineNodes();
+        int onlineNodesCnt = nodeIds.size();
+        if(0 == onlineNodesCnt) {
             return null;
         }
         
-        int index = random.nextInt() % length;
-        return channels.get(index);
+        int index = random.nextInt() % onlineNodesCnt;
+        return nodeIds.toArray(new String[0])[index];
     }
-
 }
 

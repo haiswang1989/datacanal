@@ -1,7 +1,7 @@
 package com.canal.center.cache;
 
+import java.util.HashSet;
 import java.util.concurrent.ConcurrentHashMap;
-
 import io.netty.channel.Channel;
 import lombok.Getter;
 
@@ -13,11 +13,17 @@ import lombok.Getter;
  */
 public class ChannelHeartbeatCache {
     
+    //结点id和channel的映射关系
     @Getter
     private ConcurrentHashMap<String, Channel> nodeIdToChannel;
     
+    //结点和上次心跳时间的映射关系
     @Getter
     private ConcurrentHashMap<String, Long> nodeIdToBeatTime;
+    
+    //活跃结点的缓存
+    @Getter
+    private HashSet<String> onlineNodes;
     
     private static final class SingletonHolder {
         private static final ChannelHeartbeatCache CHANNEL_HEARTBEAT_CACHE = new ChannelHeartbeatCache();
@@ -30,5 +36,6 @@ public class ChannelHeartbeatCache {
     private ChannelHeartbeatCache() {
         nodeIdToChannel = new ConcurrentHashMap<>();
         nodeIdToBeatTime = new ConcurrentHashMap<>();
+        onlineNodes = new HashSet<>();
     }
 }

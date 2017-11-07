@@ -4,6 +4,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.canal.center.cache.ChannelHeartbeatCache;
 
 import io.netty.channel.Channel;
@@ -16,6 +19,8 @@ import io.netty.channel.Channel;
  * @date 2017年11月2日 下午6:21:58
  */
 public class CheckHeartbeatThread implements Runnable {
+    
+    public static final Logger LOG = LoggerFactory.getLogger(HandleCommandThread.class);
     
     private int maxHeartbeat;
     
@@ -35,7 +40,7 @@ public class CheckHeartbeatThread implements Runnable {
         for (Map.Entry<String, Long> entry : nodeIdToBeatTime.entrySet()) {
             Long lastBeatTime = entry.getValue();
             if(currTime - lastBeatTime > this.maxHeartbeat) {
-                System.err.println("node id : " + entry.getKey() + " is missing.");
+                LOG.warn("node id : " + entry.getKey() + " is missing.");
                 lostNode.add(entry.getKey());
             }
         }
@@ -43,9 +48,11 @@ public class CheckHeartbeatThread implements Runnable {
         //结点丢失,清除服务端缓存的channel
         if(0!=lostNode.size()) {
             ConcurrentHashMap<String, Channel> nodeIdToChannel = cache.getNodeIdToChannel();
+            HashSet<String> onlineNodes = cache.getOnlineNodes();
             for (String nodeId : lostNode) {
                 nodeIdToBeatTime.remove(nodeId);
                 nodeIdToChannel.remove(nodeId);
+                onlineNodes.remove(nodeId);
             }
         }
         

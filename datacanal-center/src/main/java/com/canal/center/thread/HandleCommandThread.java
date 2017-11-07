@@ -1,12 +1,12 @@
 package com.canal.center.thread;
 
-import java.util.Map.Entry;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.canal.center.cache.ChannelHeartbeatCache;
 import com.canal.center.cache.TaskCache;
 import com.canal.center.selecter.intf.IChannelSelector;
 import com.canal.serializer.intf.ISerializer;
@@ -25,7 +25,7 @@ import io.netty.channel.Channel;
  */
 public class HandleCommandThread implements Runnable {
     
-    public static final Logger log = LoggerFactory.getLogger(HandleCommandThread.class);
+    public static final Logger LOG = LoggerFactory.getLogger(HandleCommandThread.class);
     
     private IChannelSelector selector;
     
@@ -55,13 +55,13 @@ public class HandleCommandThread implements Runnable {
      * @param command
      */
     public void handleCommand(Command command) {
-        Entry<String, Channel> entry = null;
+        String nodeId = null;
         //如果没有可用的node就一直循环测试
         while(true) {
-            if(null!=(entry=selector.select())) {
-                String nodeId = entry.getKey();
-                Channel channel = entry.getValue();
-                log.info("Instance start, command : " + command + ", nodeid : " + nodeId);
+            if(null!=(nodeId=selector.select())) {
+                Channel channel = ChannelHeartbeatCache.instance().getNodeIdToChannel().get(nodeId);
+                //TODO 在某些极限情况下会出现channel为null的情况
+                LOG.info("Instance start, command : " + command + ", nodeid : " + nodeId);
                 byte[] body = serializer.encode(command);
                 int bodyLength = body.length;
                 ByteBuf writeBuf = Unpooled.buffer(32 + bodyLength);
