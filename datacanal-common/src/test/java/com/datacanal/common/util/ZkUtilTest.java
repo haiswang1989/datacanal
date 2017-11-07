@@ -23,7 +23,7 @@ public class ZkUtilTest {
     @Test
     public void testCreatePath() {
         DbInfo dbInfo = new DbInfo("192.168.56.101", 3306, "root", "123456", "test");
-        String path = "/canal/center/task/vip_person/person";
+        String path = "/canal/center/task/vip_person/person-1";
         zkClient.create(path, dbInfo.toString(), CreateMode.PERSISTENT);
     }
     

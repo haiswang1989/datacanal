@@ -2,16 +2,16 @@
 <testng-results skipped="0" failed="0" ignored="0" total="1" passed="1">
   <reporter-output>
   </reporter-output>
-  <suite name="Default suite" duration-ms="346" started-at="2017-11-02T02:38:52Z" finished-at="2017-11-02T02:38:53Z">
+  <suite name="Default suite" duration-ms="379" started-at="2017-11-07T02:04:04Z" finished-at="2017-11-07T02:04:04Z">
     <groups>
     </groups>
-    <test name="Default test" duration-ms="346" started-at="2017-11-02T02:38:52Z" finished-at="2017-11-02T02:38:53Z">
+    <test name="Default test" duration-ms="379" started-at="2017-11-07T02:04:04Z" finished-at="2017-11-07T02:04:04Z">
       <class name="com.datacanal.common.util.ZkUtilTest">
-        <test-method status="PASS" signature="setupENV()[pri:0, instance:com.datacanal.common.util.ZkUtilTest@78031613]" name="setupENV" is-config="true" duration-ms="178" started-at="2017-11-02T10:38:52Z" finished-at="2017-11-02T10:38:53Z">
+        <test-method status="PASS" signature="setupENV()[pri:0, instance:com.datacanal.common.util.ZkUtilTest@61935511]" name="setupENV" is-config="true" duration-ms="209" started-at="2017-11-07T10:04:04Z" finished-at="2017-11-07T10:04:04Z">
           <reporter-output>
           </reporter-output>
         </test-method> <!-- setupENV -->
-        <test-method status="PASS" signature="testCreatePath()[pri:0, instance:com.datacanal.common.util.ZkUtilTest@78031613]" name="testCreatePath" duration-ms="147" started-at="2017-11-02T10:38:53Z" finished-at="2017-11-02T10:38:53Z">
+        <test-method status="PASS" signature="testCreatePath()[pri:0, instance:com.datacanal.common.util.ZkUtilTest@61935511]" name="testCreatePath" duration-ms="150" started-at="2017-11-07T10:04:04Z" finished-at="2017-11-07T10:04:04Z">
           <reporter-output>
           </reporter-output>
         </test-method> <!-- testCreatePath -->

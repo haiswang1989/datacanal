@@ -10,9 +10,20 @@
     
     <dependencies>
         <dependency>
+            <groupId>datacanal-serializer</groupId>
+            <artifactId>datacanal-serializer</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-all</artifactId>
+        </dependency>
+    
+        <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
-        </dependency>
+       </dependency>
     
         <dependency>
             <groupId>org.projectlombok</groupId>

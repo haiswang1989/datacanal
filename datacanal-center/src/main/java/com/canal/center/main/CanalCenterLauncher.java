@@ -15,9 +15,15 @@ import org.springframework.context.annotation.ImportResource;
 import org.springframework.stereotype.Component;
 
 import com.canal.center.cache.TaskCache;
-import com.canal.center.netty.server.DatacanalCenterServer;
+import com.canal.center.netty.server.DatacanalCenter;
+import com.canal.center.selecter.impl.RandomChannelSelector;
+import com.canal.center.selecter.intf.IChannelSelector;
 import com.canal.center.thread.CheckHeartbeatThread;
+import com.canal.center.thread.HandleCommandThread;
+import com.canal.serializer.impl.JSONSerializer;
+import com.canal.serializer.intf.ISerializer;
 import com.datacanal.common.constant.Consts;
+import com.datacanal.common.model.Command;
 import com.datacanal.common.util.CommonUtils;
 import com.datacanal.common.util.ZkUtil;
 import com.datacanal.zookeeper.lock.impl.ZkSimpleDistributedLock;
@@ -35,7 +41,7 @@ import io.netty.channel.ChannelFuture;
 @Component
 public class CanalCenterLauncher {
     
-    public static final Logger log = LoggerFactory.getLogger(CanalCenterLauncher.class);
+    public static final Logger LOG = LoggerFactory.getLogger(CanalCenterLauncher.class);
     
     @Value("${zookeeper.connection}")
     public String zkString;
@@ -62,13 +68,13 @@ public class CanalCenterLauncher {
         CanalCenterLauncher launcher = context.getBean(CanalCenterLauncher.class);
         launcher.setup();
         
-        DatacanalCenterServer datacanalCenterServer = DatacanalCenterServer.instance();
+        DatacanalCenter datacanalCenterServer = DatacanalCenter.instance();
         datacanalCenterServer.setPort(launcher.serverPort);
         ChannelFuture channelFuture = null;
         try {
             channelFuture = datacanalCenterServer.start();
         } catch (InterruptedException e) {
-            log.error("Heartbeat check server start failed.", e);
+            LOG.error(e.getMessage(), e);
             System.exit(-1);
         }
         
@@ -76,7 +82,7 @@ public class CanalCenterLauncher {
             //将自己注册到zookeeper上去
             launcher.registToZookeeper(launcher.serverPort);
         } catch (UnknownHostException e) {
-            log.error("Regist server to zookeeper failed.", e);
+            LOG.error(e.getMessage(), e);
             System.exit(-1);
         }
         
@@ -87,14 +93,20 @@ public class CanalCenterLauncher {
         //心跳检测
         Executors.newScheduledThreadPool(1).scheduleAtFixedRate(new CheckHeartbeatThread(launcher.maxHeartbeat), 0l, launcher.checkHearbeatPeriod, TimeUnit.SECONDS);
         
+        //instance启动命令处理
+        ISerializer<Command> serializer = new JSONSerializer<>();
+        IChannelSelector selector = new RandomChannelSelector();
+        HandleCommandThread handleCommand = new HandleCommandThread(selector, serializer);
+        Executors.newFixedThreadPool(1).execute(handleCommand);
+        
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public void run() {
-                log.info("Stop canal center.");
+                LOG.info("Stop canal center.");
             }
         });
         
-        log.info("Canal center start success.");
+        LOG.info("Canal center start success.");
         try {
             channelFuture.channel().closeFuture().sync();
         } catch (InterruptedException e) {
@@ -142,7 +154,7 @@ public class CanalCenterLauncher {
     private void preStart(ZkClient zkClient, String lockPath) {
         lock = new ZkSimpleDistributedLock(lockPath, zkClient);
         lock.lock();
-        log.info("I am master.");
+        LOG.info("I am master.");
     }
     
     /**
@@ -164,7 +176,7 @@ public class CanalCenterLauncher {
         Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
             @Override
             public void uncaughtException(Thread t, Throwable e) {
-                log.error("UnCaughtException", e);
+                LOG.error("UnCaughtException", e);
             }
         });
     }

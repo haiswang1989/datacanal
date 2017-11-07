@@ -1,5 +1,6 @@
 package com.canal.center.netty.handler;
 
+import com.alibaba.fastjson.JSON;
 import com.canal.center.cache.ChannelHeartbeatCache;
 import com.datacanal.common.model.Command;
 import com.datacanal.common.model.EventType;
@@ -10,6 +11,7 @@ import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
 
 /**
+ * 心跳处理类
  * 
  * <p>Description:</p>
  * @author hansen.wang
@@ -23,7 +25,12 @@ public class HeartbeatHandler extends ChannelHandlerAdapter {
         EventType eventType = command.getEventType();
         
         if(eventType == EventType.HEART_BEAT) {
-            Heartbeat heartbeat = (Heartbeat)command.getObj();
+            String jsonString = JSON.toJSONString(command.getObj()); 
+            Heartbeat heartbeat = JSON.parseObject(jsonString, Heartbeat.class);
+            
+            //打印心跳信息
+            System.out.println("Heart beat," + heartbeat.toString());
+            
             String nodeId = heartbeat.getNodeId();
             Channel channel = ctx.channel();
             long lastHeartbeatTime = heartbeat.getHeartbeatTime();

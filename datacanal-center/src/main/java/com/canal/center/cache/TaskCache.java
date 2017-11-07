@@ -3,11 +3,17 @@ package com.canal.center.cache;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.concurrent.LinkedBlockingQueue;
+
 import org.I0Itec.zkclient.ZkClient;
 import com.canal.center.zookeeper.listener.InstancListener;
 import com.canal.center.zookeeper.listener.LogicTableListener;
 import com.canal.center.zookeeper.listener.PhysicsTableListener;
 import com.datacanal.common.constant.Consts;
+import com.datacanal.common.model.Command;
+
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * 任务缓存
@@ -18,13 +24,22 @@ import com.datacanal.common.constant.Consts;
 public class TaskCache {
     
     //逻辑表的path
+    @Getter
+    @Setter
     private HashSet<String> logicPaths;
     
     //物理表的path
+    @Getter
+    @Setter
     private HashMap<String, HashSet<String>> logicToPhysicsPaths;
     
     //物理表和运行的instance的比对
+    @Getter
+    @Setter
     private HashMap<String, String> physicsPathToInstance;
+    
+    @Getter
+    private LinkedBlockingQueue<Command> commands;
     
     private static class SingletonHolder {
         private static final TaskCache taskCache = new TaskCache();
@@ -38,6 +53,7 @@ public class TaskCache {
         logicPaths = new HashSet<>();
         logicToPhysicsPaths = new HashMap<>();
         physicsPathToInstance = new HashMap<>();
+        commands = new LinkedBlockingQueue<>();
     }
     
     /**
@@ -56,7 +72,7 @@ public class TaskCache {
             //物理表
             List<String> tmpPhysicsPaths = zkClient.getChildren(fullLogicPath);
             //对物理表变化进行监控(上线或者下线分片)
-            zkClient.subscribeChildChanges(fullLogicPath, new PhysicsTableListener());
+            zkClient.subscribeChildChanges(fullLogicPath, new PhysicsTableListener(zkClient));
             HashSet<String> physics = new HashSet<>();
             for (String tmpPhysicsPath : tmpPhysicsPaths) {
                 String fullPhysicsPath = fullLogicPath + Consts.ZK_PATH_SEPARATOR + tmpPhysicsPath;

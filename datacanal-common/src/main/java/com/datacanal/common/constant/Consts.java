@@ -29,6 +29,11 @@ public class Consts {
     public static final String ZK_PATH_CENTER_SERVER = "/canal/center/server";
     
     /**
+     * 运行作业的结点
+     */
+    public static final String ZK_PATH_RUNNING_NODE = "/canal/node";
+    
+    /**
      * 任务目录
      */
     public static final String ZK_PATH_TASK = "/canal/center/task";
