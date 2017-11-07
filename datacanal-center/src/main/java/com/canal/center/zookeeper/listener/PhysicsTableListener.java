@@ -22,7 +22,7 @@ import com.datacanal.common.util.CommonUtils;
  */
 public class PhysicsTableListener implements IZkChildListener {
     
-    public static final Logger log = LoggerFactory.getLogger(PhysicsTableListener.class);
+    public static final Logger LOG = LoggerFactory.getLogger(PhysicsTableListener.class);
     
     private ZkClient zkClient;
     
@@ -60,7 +60,7 @@ public class PhysicsTableListener implements IZkChildListener {
                 Command command = new Command();
                 command.setEventType(EventType.INSTANCE_START);
                 command.setObj(add);
-                log.info("Add command : " + command.toString());
+                LOG.info("Add command : " + command.toString());
                 TaskCache.instance().getCommands().offer(command);
             }
         }
