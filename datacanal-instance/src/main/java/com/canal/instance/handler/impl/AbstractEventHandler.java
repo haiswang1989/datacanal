@@ -4,6 +4,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.canal.instance.handler.intf.IEventHandler;
 import com.canal.instance.handler.keeper.TableInfoKeeper;
 import com.datacanal.common.model.ColumnInfo;
@@ -16,6 +19,8 @@ import com.google.code.or.common.glossary.Column;
  * @date 2017年10月24日 上午10:35:51
  */
 public abstract class AbstractEventHandler implements IEventHandler {
+    
+    public static final Logger LOG = LoggerFactory.getLogger(AbstractEventHandler.class);
     
     /**
      * ROW_EVENT中是没有Column信息的，需要通过MysqlConnection（下面会讲到）的方式读取列名信息，
@@ -40,7 +45,7 @@ public abstract class AbstractEventHandler implements IEventHandler {
             TableInfoKeeper.refreshColumnsMap();
             if(columnInfoList.size() != cols.size())
             {
-                System.out.println("columnInfoList.size is not equal to cols.");
+                LOG.error("columnInfoList.size is not equal to cols.");
                 return null;
             }
         }

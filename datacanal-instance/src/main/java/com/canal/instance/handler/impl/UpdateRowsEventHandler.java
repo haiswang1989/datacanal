@@ -30,7 +30,7 @@ import com.google.code.or.common.glossary.Row;
 public class UpdateRowsEventHandler extends AbstractEventHandler {
     
     @Resource(name="avroSerializer")
-    private ISerializer serializer;
+    private ISerializer<CDCEvent> serializer;
     
     @Resource(name="kafkaSender")
     private ISender sender;
