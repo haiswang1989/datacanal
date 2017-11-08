@@ -19,6 +19,7 @@ public class CDCInstanceListener extends AbstractInstanceListener {
     
     public static final Logger LOG = LoggerFactory.getLogger(CDCInstanceListener.class);
     
+    //BinlogEventV4事件处理器
     @Autowired
     private EventHandler eventHandler;
     
