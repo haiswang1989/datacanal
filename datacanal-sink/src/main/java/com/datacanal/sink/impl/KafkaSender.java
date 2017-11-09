@@ -1,5 +1,7 @@
 package com.datacanal.sink.impl;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 /**
@@ -12,9 +14,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class KafkaSender extends AbstractSender {
     
+    public static final Logger LOG = LoggerFactory.getLogger(KafkaSender.class);
+    
     @Override
     public void send(String topic, byte[] message) {
-        // TODO Auto-generated method stub
+        LOG.info("Topic : {} , body : {} ", topic, new String(message));
     }
 
 }

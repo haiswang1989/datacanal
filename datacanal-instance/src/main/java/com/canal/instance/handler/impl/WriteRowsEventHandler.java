@@ -52,7 +52,7 @@ public class WriteRowsEventHandler extends AbstractEventHandler {
                 cdcEvent.setIsDdl(false);
                 cdcEvent.setSql(null);
                 cdcEvent.setAfter(afterMap);
-                sender.send("", serializer.encode(cdcEvent));
+                sender.send(tableInfo.getFullName(), serializer.encode(cdcEvent));
             }
         }
     }
