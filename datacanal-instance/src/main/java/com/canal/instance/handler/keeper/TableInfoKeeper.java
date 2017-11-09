@@ -4,8 +4,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.canal.instance.mysql.DbMetadata;
 import com.datacanal.common.model.ColumnInfo;
-import com.datacanal.common.model.DbInfo;
 import com.datacanal.common.model.TableInfo;
 import com.google.code.or.binlog.impl.event.TableMapEvent;
 
@@ -18,19 +18,27 @@ import com.google.code.or.binlog.impl.event.TableMapEvent;
  */
 public class TableInfoKeeper {
     
-    /**
-     * 表的id和表信息的映射
-     */
+    //表的id和表信息的映射
     private static Map<Long, TableInfo> tableIdMap = new ConcurrentHashMap<>();
     
-    /**
-     * 表名和表的字段集合的映射
-     */
-    private static Map<String,List<ColumnInfo>> columnsMap = new ConcurrentHashMap<>();
+    //表名和表的字段集合的映射
+    private static Map<String,List<ColumnInfo>> tableNameToColumns = new ConcurrentHashMap<>();
     
-    static {
-//        columnsMap = DbInfo.getColumns();
-        //TODO
+    /**
+     * 初始化表结构
+     */
+    public static void init() {
+        tableNameToColumns = DbMetadata.getColumns();
+    }
+    
+    /**
+     * 表结构变换,刷新表结构
+     */
+    public static synchronized void refreshColumnsMap(){
+        Map<String,List<ColumnInfo>> map = DbMetadata.getColumns();
+        if(map.size() > 0){
+            tableNameToColumns = map;
+        }
     }
     
     /**
@@ -49,18 +57,7 @@ public class TableInfoKeeper {
     }
     
     /**
-     * 
-     */
-    public static synchronized void refreshColumnsMap(){
-        //TODO
-//        Map<String,List<ColumnInfo>> map = DbInfo.getColumns();
-//        if(map.size()>0){
-//            columnsMap = map;
-//        }
-    }
-    
-    /**
-     * 
+     * 表的信息
      * @param tableId
      * @return
      */
@@ -69,11 +66,11 @@ public class TableInfoKeeper {
     }
     
     /**
-     * 
-     * @param fullName
+     * 获取表结构
+     * @param fullName 表的全名
      * @return
      */
     public static List<ColumnInfo> getColumns(String fullName){
-        return columnsMap.get(fullName);
+        return tableNameToColumns.get(fullName);
     }
 }
