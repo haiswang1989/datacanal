@@ -1,5 +1,13 @@
 package com.canal.instance;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
+import org.apache.commons.cli.PosixParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +18,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.druid.pool.DruidDataSource;
+import com.canal.instance.exception.ParamException;
+import com.canal.instance.handler.keeper.PositionKeeper;
 import com.canal.instance.handler.keeper.TableInfoKeeper;
 import com.canal.instance.listener.CDCInstanceListener;
 import com.canal.instance.mysql.DbMetadata;
@@ -34,22 +44,114 @@ public class CDCEngine {
     @Autowired
     private CDCInstanceListener listener;
     
+    //DB的host
+    private String dbHost;
+    //DB的端口
+    private int dbPort;
+    //DB的用户名
+    private String username;
+    //DB的密码
+    private String password;
+    //DB的名称
+    private String dbName;
+    //抽取表的名称,多个以逗号隔开
+    private String sensitiveTables;
+    
+    //binlog的position同步到ZK的时间间隔
+    private int positionSyncZkPeriod;
+    private int DEFAULT_POSITION_SYNC_ZK_PERIOD = 5; //默认是5秒
+    
     public static void main(String[] args) {
-        String host = args[0];
-        int port = Integer.parseInt(args[1]);
-        String username = args[2];
-        String password = args[3];
         
         @SuppressWarnings("resource")
         ApplicationContext context = new AnnotationConfigApplicationContext(CDCEngine.class);
         CDCEngine engine = context.getBean(CDCEngine.class);
+        
+        
         try {
-            engine.setup(host, port, username, password);
+            engine.parseArgs(args);
+            engine.listener.setSensitiveTables(engine.parseSensitiveTables(engine.sensitiveTables));
+            engine.setup(engine.dbHost, engine.dbPort, engine.username, engine.password, engine.dbName);
             TableInfoKeeper.init();
+            //position
+            PositionKeeper.setPositionSyncZkPeriod(engine.positionSyncZkPeriod);
+            PositionKeeper.init();
             engine.start();
         } catch (Exception e) {
             LOG.error(e.getMessage(), e);
             System.exit(-1);
+        }
+    }
+    
+    /**
+     * 
+     * @param sensitiveTables
+     * @return
+     */
+    public Set<String> parseSensitiveTables(String sensitiveTables) {
+        Set<String> retSensitiveTables = new HashSet<>();
+        for (String sensitiveTable : sensitiveTables.split(",")) {
+            retSensitiveTables.add(sensitiveTable);
+        }
+        
+        return retSensitiveTables;
+    }
+    
+    /**
+     * 解析main函数的参数
+     * @param args
+     * @throws ParseException
+     * @throws ParamException
+     */
+    public void parseArgs(String[] args) throws ParseException, ParamException {
+        final CommandLineParser parser = new PosixParser();
+        final Options options = new Options();
+        CommandLine cmdLine = parser.parse(options, args);
+        
+        if(cmdLine.hasOption("h")) { //host
+            dbHost = cmdLine.getOptionValue("h");
+        } else {
+            throw new ParamException("Db host must provide.");
+        }
+        
+        if(cmdLine.hasOption("p")) { //port
+            try {
+                dbPort = Integer.parseInt(cmdLine.getOptionValue("p"));
+            } catch(NumberFormatException e) {
+                throw new ParamException("Db port must right to provide.", e);
+            }
+        } else {
+            throw new ParamException("Db port must provide.");
+        }
+        
+        if(cmdLine.hasOption("u")) { //username
+            username = cmdLine.getOptionValue("u");
+        } else {
+            throw new ParamException("Db username must provide.");
+        }
+        
+        if(cmdLine.hasOption("pw")) { //password
+            password = cmdLine.getOptionValue("pw");
+        } else {
+            throw new ParamException("Db password must provide.");
+        }
+        
+        if(cmdLine.hasOption("n")) { //Db的名称
+            dbName = cmdLine.getOptionValue("n");
+        } else {
+            throw new ParamException("Db name must provide.");
+        }
+         
+        if(cmdLine.hasOption("st")) { //敏感表
+            dbName = cmdLine.getOptionValue("st");
+        } else {
+            throw new ParamException("Db sensitive tables must provide.");
+        }
+        
+        if(cmdLine.hasOption("sp")) { //同步position到zk的时间间隔
+            positionSyncZkPeriod = Integer.parseInt(cmdLine.getOptionValue("sp"));
+        } else {
+            positionSyncZkPeriod = DEFAULT_POSITION_SYNC_ZK_PERIOD;
         }
     }
     
@@ -67,10 +169,11 @@ public class CDCEngine {
      * @param port
      * @param username
      * @param password
+     * @param dbName
      */
-    private void setup(String host, int port, String username, String password) {
+    private void setup(String host, int port, String username, String password, String dbName) {
         //监听目标数据库的datasource
-        DruidDataSource datasource = createDruidDatasource(host, port, username, password);
+        DruidDataSource datasource = createDruidDatasource(host, port, username, password, dbName);
         JdbcTemplate jdbcTemplate = new JdbcTemplate(datasource);
         
         DbMetadata.setJdbcTemplate(jdbcTemplate);
@@ -94,12 +197,13 @@ public class CDCEngine {
      * @param port
      * @param username
      * @param password
+     * @param dbName
      * @return
      */
-    private DruidDataSource createDruidDatasource(String host, int port, String username, String password) {
+    private DruidDataSource createDruidDatasource(String host, int port, String username, String password, String dbName) {
         DruidDataSource druidDatasource = new DruidDataSource();
         druidDatasource.setDriverClassName("com.mysql.jdbc.Driver");
-        druidDatasource.setUrl("jdbc:mysql://" + host + ":" + port);
+        druidDatasource.setUrl("jdbc:mysql://" + host + ":" + port + "/" + dbName);
         druidDatasource.setUsername(username);
         druidDatasource.setPassword(password);
         druidDatasource.setMaxActive(1);
