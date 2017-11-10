@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testng-results skipped="0" failed="0" ignored="1" total="2" passed="1">
+<testng-results skipped="0" failed="0" ignored="2" total="3" passed="1">
   <reporter-output>
   </reporter-output>
-  <suite name="Default suite" duration-ms="284" started-at="2017-11-10T07:13:17Z" finished-at="2017-11-10T07:13:18Z">
+  <suite name="Default suite" duration-ms="10572" started-at="2017-11-10T09:21:50Z" finished-at="2017-11-10T09:22:00Z">
     <groups>
     </groups>
-    <test name="Default test" duration-ms="284" started-at="2017-11-10T07:13:17Z" finished-at="2017-11-10T07:13:18Z">
+    <test name="Default test" duration-ms="10572" started-at="2017-11-10T09:21:50Z" finished-at="2017-11-10T09:22:00Z">
       <class name="com.datacanal.common.util.ZkUtilTest">
-        <test-method status="PASS" signature="setupENV()[pri:0, instance:com.datacanal.common.util.ZkUtilTest@20de42ca]" name="setupENV" is-config="true" duration-ms="245" started-at="2017-11-10T15:13:17Z" finished-at="2017-11-10T15:13:18Z">
+        <test-method status="PASS" signature="setupENV()[pri:0, instance:com.datacanal.common.util.ZkUtilTest@10e73e0]" name="setupENV" is-config="true" duration-ms="193" started-at="2017-11-10T17:21:50Z" finished-at="2017-11-10T17:21:50Z">
           <reporter-output>
           </reporter-output>
         </test-method> <!-- setupENV -->
-        <test-method status="PASS" signature="test()[pri:0, instance:com.datacanal.common.util.ZkUtilTest@20de42ca]" name="test" duration-ms="6" started-at="2017-11-10T15:13:18Z" finished-at="2017-11-10T15:13:18Z">
+        <test-method status="PASS" signature="testExecCmd()[pri:0, instance:com.datacanal.common.util.ZkUtilTest@10e73e0]" name="testExecCmd" duration-ms="10354" started-at="2017-11-10T17:21:50Z" finished-at="2017-11-10T17:22:00Z">
           <reporter-output>
           </reporter-output>
-        </test-method> <!-- test -->
+        </test-method> <!-- testExecCmd -->
       </class> <!-- com.datacanal.common.util.ZkUtilTest -->
     </test> <!-- Default test -->
   </suite> <!-- Default suite -->

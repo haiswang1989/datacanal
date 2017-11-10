@@ -28,9 +28,15 @@ public class ZkUtilTest {
     public void testCreatePath() {
         Set<String> sensitiveTables = new HashSet<>();
         sensitiveTables.add("person");
-        DbInfo dbInfo = new DbInfo("192.168.56.101", 3306, "root", "123456", "test", sensitiveTables);
+        DbInfo dbInfo = new DbInfo("192.168.56.101", 3306, "root", "123456", "test", sensitiveTables, "/datacanal/task/person/person-1");
         String path = "/datacanal/task/person/person-1";
         zkClient.create(path, JSON.toJSONString(dbInfo), CreateMode.PERSISTENT);
+        
+        String instancePath = "/datacanal/task/person/person-1/instance";
+        zkClient.create(instancePath, "", CreateMode.PERSISTENT);
+        
+        String positionPath = "/datacanal/task/person/person-1/position";
+        zkClient.create(positionPath, "0", CreateMode.PERSISTENT);
     }
     
     @Test
@@ -41,5 +47,12 @@ public class ZkUtilTest {
         String parentPath = "/1/2/3/instance";
         String tmp = parentPath.substring(0, parentPath.lastIndexOf("/instance"));
         System.out.println(tmp);
+    }
+    
+    @Test
+    public void testExecCmd() {
+        
+        CommonUtils.doExecCmd("dir");
+        
     }
 }

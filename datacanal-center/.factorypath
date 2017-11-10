@@ -1,10 +1,10 @@
 <factorypath>
-    <factorypathentry kind="VARJAR" id="M2_REPO/org/apache/commons/commons-lang3/3.4/commons-lang3-3.4.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="VARJAR" id="M2_REPO/com/alibaba/fastjson/1.2.38/fastjson-1.2.38.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="VARJAR" id="M2_REPO/com/google/guava/guava/17.0/guava-17.0.jar" enabled="true" runInBatchMode="false"/>
     <factorypathentry kind="VARJAR" id="M2_REPO/org/slf4j/slf4j-api/1.7.25/slf4j-api-1.7.25.jar" enabled="true" runInBatchMode="false"/>
     <factorypathentry kind="VARJAR" id="M2_REPO/org/slf4j/slf4j-log4j12/1.7.25/slf4j-log4j12-1.7.25.jar" enabled="true" runInBatchMode="false"/>
     <factorypathentry kind="VARJAR" id="M2_REPO/log4j/log4j/1.2.17/log4j-1.2.17.jar" enabled="true" runInBatchMode="false"/>
     <factorypathentry kind="VARJAR" id="M2_REPO/io/netty/netty-all/5.0.0.Alpha2/netty-all-5.0.0.Alpha2.jar" enabled="true" runInBatchMode="false"/>
-    <factorypathentry kind="VARJAR" id="M2_REPO/com/alibaba/fastjson/1.2.38/fastjson-1.2.38.jar" enabled="true" runInBatchMode="false"/>
     <factorypathentry kind="VARJAR" id="M2_REPO/com/zendesk/open-replicator/1.6.0/open-replicator-1.6.0.jar" enabled="true" runInBatchMode="false"/>
     <factorypathentry kind="VARJAR" id="M2_REPO/com/vividsolutions/jts/1.13/jts-1.13.jar" enabled="true" runInBatchMode="false"/>
     <factorypathentry kind="VARJAR" id="M2_REPO/com/alibaba/druid/1.0.18/druid-1.0.18.jar" enabled="true" runInBatchMode="false"/>

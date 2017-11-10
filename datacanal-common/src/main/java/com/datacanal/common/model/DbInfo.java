@@ -22,4 +22,5 @@ public class DbInfo {
     private String password;
     private String dbName;
     private Set<String> sensitiveTables;
+    private String zkPath;
 }

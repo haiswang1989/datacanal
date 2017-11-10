@@ -29,4 +29,7 @@ public class Consts {
     //instance运行的目录
     public static final String DATACANAL_TASK_INSTANCE = "instance";
     
+    //
+    public static final String DATACANAL_TASK_POSITION = "position";
+    
 }

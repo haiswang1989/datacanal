@@ -1,8 +1,15 @@
 package com.datacanal.common.util;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.HashSet;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.datacanal.common.constant.Consts;
 
@@ -13,6 +20,8 @@ import com.datacanal.common.constant.Consts;
  * @date 2017年11月1日 下午3:30:02
  */
 public class CommonUtils {
+    
+    public static final Logger LOG = LoggerFactory.getLogger(CommonUtils.class);
     
     /**
      * 
@@ -63,5 +72,56 @@ public class CommonUtils {
         }
         
         return fullPaths;
+    }
+    
+    /**
+     * 
+     * @param cmd
+     * @return
+     */
+    public static boolean doExecCmd(String cmd) {
+        BufferedReader stdInputBuf = null;
+        BufferedReader stdErrorBuf = null;
+        String line = null;
+        try {
+            Process process = Runtime.getRuntime().exec(cmd);
+            InputStream stdInput = process.getInputStream();
+            InputStream stdError = process.getErrorStream();
+            
+            stdInputBuf = new BufferedReader(new InputStreamReader(stdInput)); 
+            stdErrorBuf = new BufferedReader(new InputStreamReader(stdError));
+            
+            while ((line = stdInputBuf.readLine()) != null) { 
+                LOG.info(line); 
+                System.out.println(line);
+            } 
+            
+            while ((line = stdErrorBuf.readLine()) != null) { 
+                LOG.error(line); 
+                System.err.println(line);
+            } 
+            
+            process.waitFor();
+        } catch (IOException e) {
+            LOG.error(e.getMessage(), e);
+        } catch (InterruptedException e) {
+            LOG.error(e.getMessage(), e);
+        } finally {
+            if(null!=stdInputBuf) {
+                try {
+                    stdInputBuf.close();
+                } catch (IOException e) {
+                }
+            }
+            
+            if(null!=stdErrorBuf) {
+                try {
+                    stdErrorBuf.close();
+                } catch (IOException e) {
+                }
+            }
+        }
+        
+        return true;
     }
 }

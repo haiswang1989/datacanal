@@ -10,7 +10,6 @@ import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.zookeeper.CreateMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +28,7 @@ import com.canal.instance.handler.keeper.SensitiveTablesKeeper;
 import com.canal.instance.handler.keeper.TableInfoKeeper;
 import com.canal.instance.listener.CDCInstanceListener;
 import com.canal.instance.mysql.DbMetadata;
+import com.datacanal.common.constant.Consts;
 import com.datacanal.common.model.BinlogMasterStatus;
 import com.datacanal.common.util.CommonUtils;
 import com.datacanal.common.util.ZkUtil;
@@ -53,6 +53,10 @@ public class CDCEngine {
     @Value("${zookeeper.connection}")
     private String zkString;
     
+    //binlog的position同步到ZK的时间间隔
+    @Value("${sync.period}")
+    private int positionSyncZkPeriod;
+    
     private OpenReplicator openReplicator;
     private ZkClient zkClient;
     
@@ -70,11 +74,6 @@ public class CDCEngine {
     private String sensitiveTables;
     //该分片
     private String zkPath;
-    
-    //binlog的position同步到ZK的时间间隔
-    private int positionSyncZkPeriod;
-    private int DEFAULT_POSITION_SYNC_ZK_PERIOD = 5; //默认是5秒
-    
     
     
     /**
@@ -99,16 +98,7 @@ public class CDCEngine {
         
         try {
             engine.parseArgs(args);
-            engine.setup(engine.dbHost, engine.dbPort, engine.username, engine.password, engine.dbName, engine.zkString);
-            //将自己注册到zookeeper上面
-            engine.registToZookeeper(engine.zkPath);
-            TableInfoKeeper.init();
-            //设置敏感表
-            SensitiveTablesKeeper.setSensitiveTables(engine.parseSensitiveTables(engine.sensitiveTables));
-            //position
-            PositionKeeper.setPositionSyncZkPeriod(engine.positionSyncZkPeriod);
-            PositionKeeper.setZkClient(engine.zkClient);
-            PositionKeeper.init();
+            engine.setup();
             engine.start();
         } catch (Exception e) {
             LOG.error(e.getMessage(), e);
@@ -118,10 +108,107 @@ public class CDCEngine {
     
     /**
      * 
+     * @throws Exception
+     */
+    private void start() throws Exception {
+        openReplicator.start();
+    }
+    
+    /**
+     * 
+     * @throws UnknownHostException
+     */
+    private void setup() throws UnknownHostException {
+        zkClient = new ZkClient(zkString);
+        //将自己注册到zookeeper上面
+        registToZookeeper(zkPath);
+        
+        initJdbc();
+        initOpenReplicator();
+        
+        TableInfoKeeper.init();
+        //设置敏感表
+        SensitiveTablesKeeper.setSensitiveTables(parseSensitiveTables(sensitiveTables));
+        //position
+        PositionKeeper.setPositionSyncZkPeriod(positionSyncZkPeriod);
+        PositionKeeper.setZkClient(zkClient);
+        PositionKeeper.init(zkPath);
+        
+    }
+    
+    /**
+     * 初始化JDBC
+     */
+    private void initJdbc() {
+        //监听目标数据库的datasource
+        DruidDataSource datasource = createDruidDatasource(dbHost, dbPort, username, password, dbName);
+        JdbcTemplate jdbcTemplate = new JdbcTemplate(datasource);
+        DbMetadata.setJdbcTemplate(jdbcTemplate);
+    }
+    
+    /**
+     * 
+     */
+    private void initOpenReplicator() {
+        openReplicator = new OpenReplicator();
+        openReplicator.setUser(username);
+        openReplicator.setPassword(password);
+        openReplicator.setHost(dbHost);
+        openReplicator.setPort(dbPort);
+        
+        //获取master生成的binlog的信息
+        BinlogMasterStatus binlogMasterStatus = DbMetadata.getBinlongMasterStatus();
+        openReplicator.setBinlogFileName(binlogMasterStatus.getBinlogName());
+        
+        //openReplicator.setBinlogPosition(binlogMasterStatus.getPosition());
+        //TODO
+        openReplicator.setBinlogPosition(PositionKeeper.getPosition());
+        openReplicator.setBinlogEventListener(listener);
+    }
+    
+    /**
+     * 
+     * @param path
+     * @param child
+     * @throws UnknownHostException 
+     */
+    private void registToZookeeper(String path) throws UnknownHostException {
+        String localIp = CommonUtils.getLocalIp();
+        StringBuilder registPath = new StringBuilder();
+        registPath.append(path).append(Consts.ZK_PATH_SEPARATOR).append(Consts.DATACANAL_TASK_INSTANCE);
+        ZkUtil.createChildPath(zkClient, registPath.toString(), localIp, "", CreateMode.EPHEMERAL);
+    }
+    
+    /**
+     * 目标数据库的datasource
+     * @param host
+     * @param port
+     * @param username
+     * @param password
+     * @param dbName
+     * @return
+     */
+    private DruidDataSource createDruidDatasource(String host, int port, String username, String password, String dbName) {
+        DruidDataSource druidDatasource = new DruidDataSource();
+        druidDatasource.setDriverClassName("com.mysql.jdbc.Driver");
+        druidDatasource.setUrl("jdbc:mysql://" + host + ":" + port + "/" + dbName);
+        druidDatasource.setUsername(username);
+        druidDatasource.setPassword(password);
+        druidDatasource.setMaxActive(1);
+        druidDatasource.setMinIdle(1);
+        druidDatasource.setInitialSize(1);
+        druidDatasource.setMaxWait(10000l);
+        druidDatasource.setMinEvictableIdleTimeMillis(300000l);
+        druidDatasource.setTimeBetweenEvictionRunsMillis(60000l);
+        return druidDatasource;
+    }
+    
+    /**
+     * 
      * @param sensitiveTables
      * @return
      */
-    public Set<String> parseSensitiveTables(String sensitiveTables) {
+    private Set<String> parseSensitiveTables(String sensitiveTables) {
         Set<String> retSensitiveTables = new HashSet<>();
         for (String sensitiveTable : sensitiveTables.split(",")) {
             retSensitiveTables.add(sensitiveTable);
@@ -136,7 +223,7 @@ public class CDCEngine {
      * @throws ParseException
      * @throws ParamException
      */
-    public void parseArgs(String[] args) throws ParseException, ParamException {
+    private void parseArgs(String[] args) throws ParseException, ParamException {
         final CommandLineParser parser = new PosixParser();
         final Options options = new Options();
         
@@ -191,95 +278,10 @@ public class CDCEngine {
             throw new ParamException("Db sensitive tables must provide.");
         }
         
-        if(cmdLine.hasOption("sp")) { //同步position到zk的时间间隔
-            String spString = cmdLine.getOptionValue("sp");
-            if(StringUtils.isEmpty(spString)) {
-                positionSyncZkPeriod = DEFAULT_POSITION_SYNC_ZK_PERIOD;
-            } else {
-                positionSyncZkPeriod = Integer.parseInt(spString);
-            }
-        } else {
-            positionSyncZkPeriod = DEFAULT_POSITION_SYNC_ZK_PERIOD;
-        }
-        
         if(cmdLine.hasOption("zp")) {
             zkPath = cmdLine.getOptionValue("zp");
         } else {
             throw new ParamException("Db zk Path must provide.");
         }
-    }
-    
-    /**
-     * 
-     * @throws Exception
-     */
-    private void start() throws Exception {
-        openReplicator.start();
-    }
-    
-    /**
-     * 
-     * @param host
-     * @param port
-     * @param username
-     * @param password
-     * @param dbName
-     */
-    private void setup(String host, int port, String username, String password, String dbName, String zkString) {
-        
-        zkClient = new ZkClient(zkString);
-        
-        //监听目标数据库的datasource
-        DruidDataSource datasource = createDruidDatasource(host, port, username, password, dbName);
-        JdbcTemplate jdbcTemplate = new JdbcTemplate(datasource);
-        
-        DbMetadata.setJdbcTemplate(jdbcTemplate);
-        
-        openReplicator = new OpenReplicator();
-        openReplicator.setUser(username);
-        openReplicator.setPassword(password);
-        openReplicator.setHost(host);
-        openReplicator.setPort(port);
-        
-        //获取master生成的binlog的信息
-        BinlogMasterStatus binlogMasterStatus = DbMetadata.getBinlongMasterStatus();
-        openReplicator.setBinlogFileName(binlogMasterStatus.getBinlogName());
-        openReplicator.setBinlogPosition(binlogMasterStatus.getPosition());
-        openReplicator.setBinlogEventListener(listener);
-    }
-    
-    /**
-     * 
-     * @param path
-     * @param child
-     * @throws UnknownHostException 
-     */
-    public void registToZookeeper(String path) throws UnknownHostException {
-        String localIp = CommonUtils.getLocalIp();
-        ZkUtil.createChildPath(zkClient, path, localIp, "", CreateMode.EPHEMERAL);
-    }
-    
-    /**
-     * 目标数据库的datasource
-     * @param host
-     * @param port
-     * @param username
-     * @param password
-     * @param dbName
-     * @return
-     */
-    private DruidDataSource createDruidDatasource(String host, int port, String username, String password, String dbName) {
-        DruidDataSource druidDatasource = new DruidDataSource();
-        druidDatasource.setDriverClassName("com.mysql.jdbc.Driver");
-        druidDatasource.setUrl("jdbc:mysql://" + host + ":" + port + "/" + dbName);
-        druidDatasource.setUsername(username);
-        druidDatasource.setPassword(password);
-        druidDatasource.setMaxActive(1);
-        druidDatasource.setMinIdle(1);
-        druidDatasource.setInitialSize(1);
-        druidDatasource.setMaxWait(10000l);
-        druidDatasource.setMinEvictableIdleTimeMillis(300000l);
-        druidDatasource.setTimeBetweenEvictionRunsMillis(60000l);
-        return druidDatasource;
     }
 }

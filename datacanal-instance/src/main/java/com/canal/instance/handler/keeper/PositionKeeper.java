@@ -5,6 +5,9 @@ import java.util.concurrent.TimeUnit;
 
 import org.I0Itec.zkclient.ZkClient;
 
+import com.datacanal.common.constant.Consts;
+
+import lombok.Getter;
 import lombok.Setter;
 
 /**
@@ -16,6 +19,7 @@ import lombok.Setter;
 public class PositionKeeper {
     
     @Setter
+    @Getter
     private static volatile long position = 0l;
     
     @Setter
@@ -24,8 +28,19 @@ public class PositionKeeper {
     @Setter
     private static ZkClient zkClient;
     
-    public static void init() {
+    public static void init(String zkPath) {
+        position = getLastPositionFromZk(zkPath);
         Executors.newScheduledThreadPool(1).scheduleAtFixedRate(new SyncZookeeper(), 0, positionSyncZkPeriod, TimeUnit.SECONDS);
+    }
+    
+    /**
+     * 上一次停止时的zk中记录的position
+     * @param path
+     */
+    private static long getLastPositionFromZk(String path) {
+        StringBuilder positionPath = new StringBuilder();
+        positionPath.append(path).append(Consts.ZK_PATH_SEPARATOR).append(Consts.DATACANAL_TASK_POSITION);
+        return zkClient.readData(positionPath.toString());
     }
     
     static class SyncZookeeper implements Runnable {

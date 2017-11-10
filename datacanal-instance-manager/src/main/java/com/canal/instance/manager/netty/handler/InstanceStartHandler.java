@@ -10,6 +10,7 @@ import com.canal.instance.manager.NodeManagerLaucher;
 import com.datacanal.common.model.Command;
 import com.datacanal.common.model.DbInfo;
 import com.datacanal.common.model.EventType;
+import com.datacanal.common.util.CommonUtils;
 
 import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
@@ -61,6 +62,8 @@ public class InstanceStartHandler extends ChannelHandlerAdapter {
             DbInfo dbInfo = JSON.parseObject(jsonString, DbInfo.class);
             String cmd = buildCmd(dbInfo);
             LOG.info("Cmd : {}", cmd);
+            CommonUtils.doExecCmd(cmd);
+            
         } else {
             LOG.error("Start instance failed, path : [{}] not exist.", physicsTable);
         }
@@ -72,8 +75,8 @@ public class InstanceStartHandler extends ChannelHandlerAdapter {
      */
     public String buildCmd(DbInfo dbInfo) {
         StringBuilder cmd = new StringBuilder();
-        cmd.append("sh ").append(startInstanceShell).append(" ").append(" %s %d %s %s %s %s");
+        cmd.append("sh ").append(startInstanceShell).append(" ").append(" %s %d %s %s %s %s %s");
         return String.format(cmd.toString(), dbInfo.getHost(), dbInfo.getPort(), dbInfo.getUsername(), 
-                dbInfo.getPassword(), dbInfo.getDbName(), StringUtils.join(dbInfo.getSensitiveTables(), ","));
+                dbInfo.getPassword(), dbInfo.getDbName(), StringUtils.join(dbInfo.getSensitiveTables(), ","), dbInfo.getZkPath());
     }
 }
