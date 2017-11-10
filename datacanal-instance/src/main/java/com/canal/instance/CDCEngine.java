@@ -9,6 +9,7 @@ import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -129,6 +130,15 @@ public class CDCEngine {
     public void parseArgs(String[] args) throws ParseException, ParamException {
         final CommandLineParser parser = new PosixParser();
         final Options options = new Options();
+        
+        options.addOption("h", true, "DB的host(必须)");
+        options.addOption("p", true, "DB的port(必须)");
+        options.addOption("u", true, "DB的username(必须)");
+        options.addOption("pw", true, "DB的password(必须)");
+        options.addOption("n", true, "DB的名称(必须)");
+        options.addOption("st", true, "需要抽取DB表的名称");
+        options.addOption("sp", true, "SYNC Position到ZK的时间间隔");
+        
         CommandLine cmdLine = parser.parse(options, args);
         
         if(cmdLine.hasOption("h")) { //host
@@ -166,13 +176,18 @@ public class CDCEngine {
         }
          
         if(cmdLine.hasOption("st")) { //敏感表
-            dbName = cmdLine.getOptionValue("st");
+            sensitiveTables = cmdLine.getOptionValue("st");
         } else {
             throw new ParamException("Db sensitive tables must provide.");
         }
         
         if(cmdLine.hasOption("sp")) { //同步position到zk的时间间隔
-            positionSyncZkPeriod = Integer.parseInt(cmdLine.getOptionValue("sp"));
+            String spString = cmdLine.getOptionValue("sp");
+            if(StringUtils.isEmpty(spString)) {
+                positionSyncZkPeriod = DEFAULT_POSITION_SYNC_ZK_PERIOD;
+            } else {
+                positionSyncZkPeriod = Integer.parseInt(spString);
+            }
         } else {
             positionSyncZkPeriod = DEFAULT_POSITION_SYNC_ZK_PERIOD;
         }
