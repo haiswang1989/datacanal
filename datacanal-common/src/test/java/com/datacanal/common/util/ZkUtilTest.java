@@ -36,7 +36,7 @@ public class ZkUtilTest {
         zkClient.create(instancePath, "", CreateMode.PERSISTENT);
         
         String positionPath = "/datacanal/task/person/person-1/position";
-        zkClient.create(positionPath, "0", CreateMode.PERSISTENT);
+        zkClient.create(positionPath, 0l, CreateMode.PERSISTENT);
     }
     
     @Test

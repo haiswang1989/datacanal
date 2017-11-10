@@ -160,9 +160,9 @@ public class CDCEngine {
         BinlogMasterStatus binlogMasterStatus = DbMetadata.getBinlongMasterStatus();
         openReplicator.setBinlogFileName(binlogMasterStatus.getBinlogName());
         
-        //openReplicator.setBinlogPosition(binlogMasterStatus.getPosition());
+        openReplicator.setBinlogPosition(binlogMasterStatus.getPosition());
         //TODO
-        openReplicator.setBinlogPosition(PositionKeeper.getPosition());
+        //openReplicator.setBinlogPosition(PositionKeeper.getPosition());
         openReplicator.setBinlogEventListener(listener);
     }
     
