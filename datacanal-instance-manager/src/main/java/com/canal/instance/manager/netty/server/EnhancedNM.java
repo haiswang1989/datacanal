@@ -44,13 +44,16 @@ public class EnhancedNM implements Runnable {
     
     private int heartbeatSecond;
     
-    public EnhancedNM(ZkClient zkClientArg, String nodeIdArg, int heartbeatSecondArg) {
+    private String startInstanceShell;
+    
+    public EnhancedNM(ZkClient zkClientArg, String nodeIdArg, int heartbeatSecondArg, String startInstanceShellArg) {
         nmServer = NodeManager.instance();
         scheduledES = Executors.newScheduledThreadPool(1);
         serializer = new JSONSerializer<>();
         this.zkClient = zkClientArg;
         this.nodeId = nodeIdArg;
         this.heartbeatSecond = heartbeatSecondArg;
+        this.startInstanceShell = startInstanceShellArg;
     }
     
     @Override
@@ -74,7 +77,7 @@ public class EnhancedNM implements Runnable {
                 int port = Integer.parseInt(ipPort[1]);
                 try {
                     //连接上center
-                    ChannelFuture future = nmServer.connect(ip, port);
+                    ChannelFuture future = nmServer.connect(ip, port, startInstanceShell, zkClient);
                     Channel channel = future.channel();
                     scheduledES.scheduleAtFixedRate(new HeartbeatThread(channel, serializer, this.nodeId), 0, this.heartbeatSecond, TimeUnit.SECONDS);
                     channel.closeFuture().sync();

@@ -37,6 +37,9 @@ public class NodeManagerLaucher {
     @Value("${heartbeat.second}")
     private int heartbeatSecond;
     
+    @Value("${instance.start.shell}")
+    private String startInstanceShell;
+    
     private ZkClient zkClient;
     
     public static void main(String[] args) {
@@ -62,7 +65,7 @@ public class NodeManagerLaucher {
             }
         });
         
-        EnhancedNM enhancedNMServer = new EnhancedNM(laucher.zkClient, laucher.nodeId, laucher.heartbeatSecond);
+        EnhancedNM enhancedNMServer = new EnhancedNM(laucher.zkClient, laucher.nodeId, laucher.heartbeatSecond, laucher.startInstanceShell);
         Thread t1 = new Thread(enhancedNMServer);
         t1.start();
         

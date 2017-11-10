@@ -1,5 +1,7 @@
 package com.canal.instance.manager.netty.server;
 
+import org.I0Itec.zkclient.ZkClient;
+
 import com.canal.instance.manager.netty.handler.InstanceStartHandler;
 import com.datacanal.common.netty.handler.HeadWithBodyDecodeHandler;
 import com.datacanal.common.netty.handler.IoOperatorHandler;
@@ -36,11 +38,11 @@ public class NodeManager {
         group = new NioEventLoopGroup();
         bootstap.group(group)
             .channel(NioSocketChannel.class)
-            .option(ChannelOption.TCP_NODELAY, true)
-            .handler(new IoOperatorHandler(new HeadWithBodyDecodeHandler(), new InstanceStartHandler()));
+            .option(ChannelOption.TCP_NODELAY, true);
     }
     
-    public ChannelFuture connect(String ip, int port) throws InterruptedException {
+    public ChannelFuture connect(String ip, int port, String startInstanceShell, ZkClient zkClient) throws InterruptedException {
+        bootstap.handler(new IoOperatorHandler(new HeadWithBodyDecodeHandler(), new InstanceStartHandler(startInstanceShell, zkClient)));
         return bootstap.connect(ip, port).sync();
     }
     

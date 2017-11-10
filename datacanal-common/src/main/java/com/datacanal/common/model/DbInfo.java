@@ -1,7 +1,6 @@
 package com.datacanal.common.model;
 
-import com.alibaba.fastjson.JSON;
-
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -22,9 +21,5 @@ public class DbInfo {
     private String username;
     private String password;
     private String dbName;
-    
-    @Override
-    public String toString() {
-        return JSON.toJSONString(this);
-    }
+    private Set<String> sensitiveTables;
 }

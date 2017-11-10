@@ -20,6 +20,10 @@ import com.datacanal.common.util.CommonUtils;
 public class LogicTableListener implements IZkChildListener {
     
     private ZkClient zkClient;
+    
+    public LogicTableListener(ZkClient zkClientArg) {
+        this.zkClient = zkClientArg;
+    }
 
     @Override
     public void handleChildChange(String parentPath, List<String> currentChilds) throws Exception {
