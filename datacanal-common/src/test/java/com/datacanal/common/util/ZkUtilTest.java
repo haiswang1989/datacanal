@@ -37,5 +37,9 @@ public class ZkUtilTest {
     public void test() {
         String ip = "192.168.0.1";
         System.out.println(ip.indexOf("."));
+        
+        String parentPath = "/1/2/3/instance";
+        String tmp = parentPath.substring(0, parentPath.lastIndexOf("/instance"));
+        System.out.println(tmp);
     }
 }

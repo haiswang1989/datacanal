@@ -6,11 +6,16 @@ import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import org.I0Itec.zkclient.ZkClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.canal.center.CanalCenterLauncher;
 import com.canal.center.zookeeper.listener.InstancListener;
 import com.canal.center.zookeeper.listener.LogicTableListener;
 import com.canal.center.zookeeper.listener.PhysicsTableListener;
 import com.datacanal.common.constant.Consts;
 import com.datacanal.common.model.Command;
+import com.datacanal.common.model.EventType;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -22,6 +27,8 @@ import lombok.Setter;
  * @date 2017年11月1日 下午5:16:04
  */
 public class TaskCache {
+    
+    public static final Logger LOG = LoggerFactory.getLogger(CanalCenterLauncher.class);
     
     //逻辑表的path
     @Getter
@@ -88,6 +95,13 @@ public class TaskCache {
                 if(null==runningInstance || 0==runningInstance.size()) {
                     //这边需要发送一个启动instance的命令
                     physicsPathToInstance.put(fullPhysicsPath, null);
+                    //添加新的分片,需要到其他node上启动instance
+                    Command command = new Command();
+                    command.setEventType(EventType.INSTANCE_START);
+                    command.setObj(fullPhysicsPath);
+                    LOG.info("Add command : " + command.toString());
+                    TaskCache.instance().getCommands().offer(command);
+                    
                 } else {
                     String val1 = runningInstance.get(0);
                     String val2 = runningInstance.get(1);
