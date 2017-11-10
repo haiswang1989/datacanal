@@ -128,7 +128,7 @@ public class CanalCenterLauncher {
         String localIp = CommonUtils.getLocalIp();
         StringBuilder childPath = new StringBuilder();
         childPath.append(localIp).append(":").append(serverPort);
-        ZkUtil.createChildPath(zkClient, Consts.ZK_PATH_CENTER_SERVER, childPath.toString(), "", CreateMode.EPHEMERAL);
+        ZkUtil.createChildPath(zkClient, Consts.DATACANAL_CANAL_SERVER, childPath.toString(), "", CreateMode.EPHEMERAL);
     }
     
     /**
@@ -136,20 +136,20 @@ public class CanalCenterLauncher {
      */
     public void setup() {
         zkClient = new ZkClient(zkString);
-        if(!zkClient.exists(Consts.DISTRIBUTED_LOCK_BASE_PATH)) {
-            ZkUtil.createPathRecursive(zkClient, Consts.DISTRIBUTED_LOCK_BASE_PATH);
+        if(!zkClient.exists(Consts.DATACANAL_LOCK)) {
+            ZkUtil.createPathRecursive(zkClient, Consts.DATACANAL_LOCK);
         }
         
-        if(!zkClient.exists(Consts.ZK_PATH_CENTER_SERVER)) {
-            ZkUtil.createPathRecursive(zkClient, Consts.ZK_PATH_CENTER_SERVER);
+        if(!zkClient.exists(Consts.DATACANAL_CANAL_SERVER)) {
+            ZkUtil.createPathRecursive(zkClient, Consts.DATACANAL_CANAL_SERVER);
         }
         
-        if(!zkClient.exists(Consts.ZK_PATH_TASK)) {
-            ZkUtil.createPathRecursive(zkClient, Consts.ZK_PATH_TASK);
+        if(!zkClient.exists(Consts.DATACANAL_TASK)) {
+            ZkUtil.createPathRecursive(zkClient, Consts.DATACANAL_TASK);
         }
         
-        //尝试自己做master,如果被强就堵塞
-        preStart(zkClient, buildLockPath());
+        //尝试自己做master,如果被抢就堵塞
+        preStart(zkClient, Consts.DATACANAL_LOCK_SERVERLOCK);
     }
     
     /**
@@ -161,18 +161,6 @@ public class CanalCenterLauncher {
         lock = new ZkSimpleDistributedLock(lockPath, zkClient);
         lock.lock();
         LOG.info("I am master.");
-    }
-    
-    /**
-     * 构造锁zookeeper目录
-     * @return
-     */
-    private String buildLockPath() {
-        StringBuilder lockPath = new StringBuilder();
-        lockPath.append(Consts.DISTRIBUTED_LOCK_BASE_PATH)
-                .append(Consts.ZK_PATH_SEPARATOR)
-                .append(Consts.DISTRIBUTED_LOCK_CANAL_CENTER);
-        return lockPath.toString();
     }
     
     /**

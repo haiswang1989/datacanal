@@ -3,6 +3,7 @@ package com.canal.instance;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.I0Itec.zkclient.ZkClient;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.Options;
@@ -11,6 +12,7 @@ import org.apache.commons.cli.PosixParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.ImportResource;
@@ -20,6 +22,7 @@ import org.springframework.stereotype.Service;
 import com.alibaba.druid.pool.DruidDataSource;
 import com.canal.instance.exception.ParamException;
 import com.canal.instance.handler.keeper.PositionKeeper;
+import com.canal.instance.handler.keeper.SensitiveTablesKeeper;
 import com.canal.instance.handler.keeper.TableInfoKeeper;
 import com.canal.instance.listener.CDCInstanceListener;
 import com.canal.instance.mysql.DbMetadata;
@@ -38,11 +41,15 @@ import com.google.code.or.OpenReplicator;
 public class CDCEngine {
     
     public static final Logger LOG = LoggerFactory.getLogger(CDCEngine.class);
-    
-    private OpenReplicator openReplicator;
-    
+
     @Autowired
     private CDCInstanceListener listener;
+    
+    @Value("${zookeeper.connection}")
+    private String zkString;
+    
+    private OpenReplicator openReplicator;
+    private ZkClient zkClient;
     
     //DB的host
     private String dbHost;
@@ -61,20 +68,36 @@ public class CDCEngine {
     private int positionSyncZkPeriod;
     private int DEFAULT_POSITION_SYNC_ZK_PERIOD = 5; //默认是5秒
     
+    
+    
+    /**
+     * java CDCEngine -h 192.168.56.101 -p 3006 -u root -pw 123456 -n test -st person -sp 5
+     * 
+     * -h   DB的host(必须)
+     * -p   DB的port(必须)
+     * -u   DB的username(必须)
+     * -pw  DB的password(必须)
+     * -n   DB的名称(必须)
+     * -st  需要抽取DB表的名称
+     * -sp  SYNC Position到ZK的时间间隔
+     * 
+     * @param args
+     */
     public static void main(String[] args) {
         
         @SuppressWarnings("resource")
         ApplicationContext context = new AnnotationConfigApplicationContext(CDCEngine.class);
         CDCEngine engine = context.getBean(CDCEngine.class);
         
-        
         try {
             engine.parseArgs(args);
-            engine.listener.setSensitiveTables(engine.parseSensitiveTables(engine.sensitiveTables));
-            engine.setup(engine.dbHost, engine.dbPort, engine.username, engine.password, engine.dbName);
+            engine.setup(engine.dbHost, engine.dbPort, engine.username, engine.password, engine.dbName, engine.zkString);
             TableInfoKeeper.init();
+            //设置敏感表
+            SensitiveTablesKeeper.setSensitiveTables(engine.parseSensitiveTables(engine.sensitiveTables));
             //position
             PositionKeeper.setPositionSyncZkPeriod(engine.positionSyncZkPeriod);
+            PositionKeeper.setZkClient(engine.zkClient);
             PositionKeeper.init();
             engine.start();
         } catch (Exception e) {
@@ -171,7 +194,10 @@ public class CDCEngine {
      * @param password
      * @param dbName
      */
-    private void setup(String host, int port, String username, String password, String dbName) {
+    private void setup(String host, int port, String username, String password, String dbName, String zkString) {
+        
+        zkClient = new ZkClient(zkString);
+        
         //监听目标数据库的datasource
         DruidDataSource datasource = createDruidDatasource(host, port, username, password, dbName);
         JdbcTemplate jdbcTemplate = new JdbcTemplate(datasource);

@@ -61,12 +61,12 @@ public class TaskCache {
      * @param zkClient
      */
     public void loadTask(ZkClient zkClient) {
-        List<String> tmpLogicPaths = zkClient.getChildren(Consts.ZK_PATH_TASK);
+        List<String> tmpLogicPaths = zkClient.getChildren(Consts.DATACANAL_TASK);
         //对逻辑表的变化进行监控(新的表监控上线)
-        zkClient.subscribeChildChanges(Consts.ZK_PATH_TASK, new LogicTableListener());
+        zkClient.subscribeChildChanges(Consts.DATACANAL_TASK, new LogicTableListener());
         logicPaths.clear();
         for (String tmpLogicPath : tmpLogicPaths) {
-            String fullLogicPath = Consts.ZK_PATH_TASK + Consts.ZK_PATH_SEPARATOR + tmpLogicPath;
+            String fullLogicPath = Consts.DATACANAL_TASK + Consts.ZK_PATH_SEPARATOR + tmpLogicPath;
             //所有的逻辑表
             logicPaths.add(fullLogicPath);
             //物理表

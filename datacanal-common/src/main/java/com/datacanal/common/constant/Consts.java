@@ -8,34 +8,22 @@ package com.datacanal.common.constant;
  */
 public class Consts {
     
-    /**
-     * 分布式锁的基础目录
-     */
-    public static final String DISTRIBUTED_LOCK_BASE_PATH = "/canal/center/distributedlock";
+    //canal 锁的基础目录
+    public static final String DATACANAL_LOCK = "/datacanal/lock";
     
-    /**
-     * canal center分布式锁的创建目录
-     */
-    public static final String DISTRIBUTED_LOCK_CANAL_CENTER = "cannal_center";
+    //canal server的分布式锁的目录
+    public static final String DATACANAL_LOCK_SERVERLOCK = "/datacanal/lock/serverlock";
     
-    /**
-     * zookeeper目录分隔符
-     */
+    //center server注册目录
+    public static final String DATACANAL_CANAL_SERVER = "/datacanal/canal_server";
+    
+    //ZK上分隔符
     public static final String ZK_PATH_SEPARATOR = "/";
     
-    /**
-     * center server注册目录
-     */
-    public static final String ZK_PATH_CENTER_SERVER = "/canal/center/server";
+    //运行作业的结点
+    public static final String DATACANAL_NODE = "/datacanal/node";
     
-    /**
-     * 运行作业的结点
-     */
-    public static final String ZK_PATH_RUNNING_NODE = "/canal/node";
-    
-    /**
-     * 任务目录
-     */
-    public static final String ZK_PATH_TASK = "/canal/center/task";
+    //任务目录
+    public static final String DATACANAL_TASK = "/datacanal/task";
     
 }

@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.canal.instance.handler.intf.IEventHandler;
+import com.canal.instance.handler.keeper.SensitiveTablesKeeper;
 import com.canal.instance.handler.keeper.TableInfoKeeper;
 import com.datacanal.common.model.ColumnInfo;
 import com.google.code.or.common.glossary.Column;
@@ -58,6 +59,15 @@ public abstract class AbstractEventHandler implements IEventHandler {
         }
 
         return map;
+    }
+    
+    /**
+     * 该表的数据是否需要处理
+     * @param tableName
+     * @return
+     */
+    protected boolean isNeedHandle(String tableName) {
+        return SensitiveTablesKeeper.isSensitiveTable(tableName);
     }
     
 }

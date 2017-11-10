@@ -3,6 +3,8 @@ package com.canal.instance.handler.keeper;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import org.I0Itec.zkclient.ZkClient;
+
 import lombok.Setter;
 
 /**
@@ -18,6 +20,9 @@ public class PositionKeeper {
     
     @Setter
     private static int positionSyncZkPeriod;
+    
+    @Setter
+    private static ZkClient zkClient;
     
     public static void init() {
         Executors.newScheduledThreadPool(1).scheduleAtFixedRate(new SyncZookeeper(), 0, positionSyncZkPeriod, TimeUnit.SECONDS);

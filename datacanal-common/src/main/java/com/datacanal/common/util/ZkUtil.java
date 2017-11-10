@@ -21,7 +21,7 @@ public class ZkUtil {
      */
     public static void createChildPath(ZkClient zkClient, String parentPath, String childPath, String value, CreateMode mode) {
         StringBuilder createPath = new StringBuilder();
-        createPath.append(parentPath).append(Consts.ZK_PATH_SEPARATOR).append(childPath);
+        createPath.append(parentPath).append(Consts.DATACANAL_CANAL_SERVER).append(childPath);
         zkClient.create(createPath.toString(), value, mode);
     }
     

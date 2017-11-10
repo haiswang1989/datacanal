@@ -78,8 +78,8 @@ public class NodeManagerLaucher {
      */
     public void setup() {
         zkClient = new ZkClient(zkString);
-        if(!zkClient.exists(Consts.ZK_PATH_RUNNING_NODE)) {
-            ZkUtil.createPathRecursive(zkClient, Consts.ZK_PATH_RUNNING_NODE);
+        if(!zkClient.exists(Consts.DATACANAL_NODE)) {
+            ZkUtil.createPathRecursive(zkClient, Consts.DATACANAL_NODE);
         }
     }
     
@@ -89,7 +89,7 @@ public class NodeManagerLaucher {
      */
     public void registToZookeeper() throws UnknownHostException {
         String localIp = CommonUtils.getLocalIp();
-        ZkUtil.createChildPath(zkClient, Consts.ZK_PATH_RUNNING_NODE, localIp, "", CreateMode.EPHEMERAL);
+        ZkUtil.createChildPath(zkClient, Consts.DATACANAL_NODE, localIp, "", CreateMode.EPHEMERAL);
     }
     
     /**

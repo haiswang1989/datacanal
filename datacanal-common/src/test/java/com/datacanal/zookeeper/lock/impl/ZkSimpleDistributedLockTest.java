@@ -15,7 +15,7 @@ public class ZkSimpleDistributedLockTest {
     
     @BeforeClass
     public void setupENV() {
-        String lockPath = Consts.DISTRIBUTED_LOCK_BASE_PATH + "/" + Consts.DISTRIBUTED_LOCK_CANAL_CENTER;
+        String lockPath = Consts.DATACANAL_LOCK_SERVERLOCK;
         String zkString = "10.199.188.79:2181,10.199.187.101:2181,10.199.187.102:2181";
         zkClient = new ZkClient(zkString);
         lock = new ZkSimpleDistributedLock(lockPath, zkClient);

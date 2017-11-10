@@ -1,7 +1,5 @@
 package com.canal.instance.listener;
 
-import java.util.Set;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,8 +8,6 @@ import org.springframework.stereotype.Component;
 import com.canal.instance.handler.EventHandler;
 import com.canal.instance.handler.keeper.PositionKeeper;
 import com.google.code.or.binlog.BinlogEventV4;
-
-import lombok.Setter;
 
 /**
  * 
@@ -27,9 +23,6 @@ public class CDCInstanceListener extends AbstractInstanceListener {
     //BinlogEventV4事件处理器
     @Autowired
     private EventHandler eventHandler;
-    
-    @Setter
-    private Set<String> sensitiveTables;
     
     @Override
     public void onEvents(BinlogEventV4 event) {

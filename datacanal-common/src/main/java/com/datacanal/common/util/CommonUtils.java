@@ -58,7 +58,7 @@ public class CommonUtils {
         HashSet<String> fullPaths = new HashSet<>();
         for (String path : paths) {
             fullPathBuilder.setLength(0);
-            fullPathBuilder.append(parentPath).append(Consts.ZK_PATH_SEPARATOR).append(path);
+            fullPathBuilder.append(parentPath).append(Consts.DATACANAL_CANAL_SERVER).append(path);
             fullPaths.add(fullPathBuilder.toString());
         }
         

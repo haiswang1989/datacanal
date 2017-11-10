@@ -109,7 +109,7 @@ public class EnhancedNM implements Runnable {
      * @return
      */
     public String getCenterIpPort() {
-        List<String> servers = zkClient.getChildren(Consts.ZK_PATH_CENTER_SERVER);
+        List<String> servers = zkClient.getChildren(Consts.DATACANAL_CANAL_SERVER);
         if(null==servers || 0==servers.size()) {
             return null;
         }
