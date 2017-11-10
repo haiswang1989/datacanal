@@ -77,13 +77,29 @@ public class TaskCache {
             for (String tmpPhysicsPath : tmpPhysicsPaths) {
                 String fullPhysicsPath = fullLogicPath + Consts.ZK_PATH_SEPARATOR + tmpPhysicsPath;
                 physics.add(fullPhysicsPath);
-                List<String> instances = zkClient.getChildren(fullPhysicsPath);
+                
+                //instance的路径
+                String instancePath =  fullPhysicsPath + Consts.ZK_PATH_SEPARATOR + Consts.DATACANAL_TASK_INSTANCE;
                 //对物理表的运行instance进行监控(instance挂掉以后触发)
-                zkClient.subscribeChildChanges(fullPhysicsPath, new InstancListener(zkClient));
-                if(null==instances || 0==instances.size()) {
+                zkClient.subscribeChildChanges(instancePath, new InstancListener(zkClient));
+                
+                List<String> runningInstance = zkClient.getChildren(instancePath);
+                
+                if(null==runningInstance || 0==runningInstance.size()) {
+                    //这边需要发送一个启动instance的命令
                     physicsPathToInstance.put(fullPhysicsPath, null);
                 } else {
-                    String instance = instances.get(0);
+                    String val1 = runningInstance.get(0);
+                    String val2 = runningInstance.get(1);
+                    
+                    String ip = null;
+                    if(-1!=val1.indexOf(".")) {
+                        ip = val1;
+                    } else {
+                        ip = val2;
+                    }
+                    
+                    String instance = instancePath + Consts.ZK_PATH_SEPARATOR + ip;
                     physicsPathToInstance.put(fullPhysicsPath, instance);
                 }
             }

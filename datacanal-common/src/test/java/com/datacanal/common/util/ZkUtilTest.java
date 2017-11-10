@@ -33,4 +33,9 @@ public class ZkUtilTest {
         zkClient.create(path, JSON.toJSONString(dbInfo), CreateMode.PERSISTENT);
     }
     
+    @Test
+    public void test() {
+        String ip = "192.168.0.1";
+        System.out.println(ip.indexOf("."));
+    }
 }

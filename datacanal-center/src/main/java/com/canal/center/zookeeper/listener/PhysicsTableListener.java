@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.canal.center.cache.TaskCache;
+import com.datacanal.common.constant.Consts;
 import com.datacanal.common.model.Command;
 import com.datacanal.common.model.EventType;
 import com.datacanal.common.util.CommonUtils;
@@ -55,7 +56,11 @@ public class PhysicsTableListener implements IZkChildListener {
     public void handleAdd(HashSet<String> adds, String parentPath) {
         for (String add : adds) {
             if(zkClient.exists(add)) {
-                zkClient.subscribeChildChanges(add, new InstancListener(zkClient));
+                //instance挂载的目录
+                StringBuilder instancePath = new StringBuilder();
+                instancePath.append(add).append(Consts.ZK_PATH_SEPARATOR).append("instance");
+                
+                zkClient.subscribeChildChanges(instancePath.toString(), new InstancListener(zkClient));
                 //添加新的分片,需要到其他node上启动instance
                 Command command = new Command();
                 command.setEventType(EventType.INSTANCE_START);

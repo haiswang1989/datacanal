@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testng-results skipped="0" failed="0" ignored="0" total="1" passed="1">
+<testng-results skipped="0" failed="0" ignored="1" total="2" passed="1">
   <reporter-output>
   </reporter-output>
-  <suite name="Default suite" duration-ms="343" started-at="2017-11-10T05:40:15Z" finished-at="2017-11-10T05:40:15Z">
+  <suite name="Default suite" duration-ms="223" started-at="2017-11-10T07:05:12Z" finished-at="2017-11-10T07:05:13Z">
     <groups>
     </groups>
-    <test name="Default test" duration-ms="343" started-at="2017-11-10T05:40:15Z" finished-at="2017-11-10T05:40:15Z">
+    <test name="Default test" duration-ms="223" started-at="2017-11-10T07:05:12Z" finished-at="2017-11-10T07:05:13Z">
       <class name="com.datacanal.common.util.ZkUtilTest">
-        <test-method status="PASS" signature="setupENV()[pri:0, instance:com.datacanal.common.util.ZkUtilTest@67bcdb3f]" name="setupENV" is-config="true" duration-ms="180" started-at="2017-11-10T13:40:15Z" finished-at="2017-11-10T13:40:15Z">
+        <test-method status="PASS" signature="setupENV()[pri:0, instance:com.datacanal.common.util.ZkUtilTest@29fd5dc4]" name="setupENV" is-config="true" duration-ms="195" started-at="2017-11-10T15:05:12Z" finished-at="2017-11-10T15:05:13Z">
           <reporter-output>
           </reporter-output>
         </test-method> <!-- setupENV -->
-        <test-method status="PASS" signature="testCreatePath()[pri:0, instance:com.datacanal.common.util.ZkUtilTest@67bcdb3f]" name="testCreatePath" duration-ms="146" started-at="2017-11-10T13:40:15Z" finished-at="2017-11-10T13:40:15Z">
+        <test-method status="PASS" signature="test()[pri:0, instance:com.datacanal.common.util.ZkUtilTest@29fd5dc4]" name="test" duration-ms="5" started-at="2017-11-10T15:05:13Z" finished-at="2017-11-10T15:05:13Z">
           <reporter-output>
           </reporter-output>
-        </test-method> <!-- testCreatePath -->
+        </test-method> <!-- test -->
       </class> <!-- com.datacanal.common.util.ZkUtilTest -->
     </test> <!-- Default test -->
   </suite> <!-- Default suite -->

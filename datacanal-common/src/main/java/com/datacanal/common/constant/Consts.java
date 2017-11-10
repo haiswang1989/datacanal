@@ -26,4 +26,7 @@ public class Consts {
     //任务目录
     public static final String DATACANAL_TASK = "/datacanal/task";
     
+    //instance运行的目录
+    public static final String DATACANAL_TASK_INSTANCE = "instance";
+    
 }

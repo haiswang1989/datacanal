@@ -29,10 +29,14 @@ public class PositionKeeper {
     }
     
     static class SyncZookeeper implements Runnable {
+        
+        long lastPosition = 0l; 
+        
         @Override
         public void run() {
-            long newPosition = position;
-            System.out.println(newPosition);
+            if(lastPosition != position) {
+                
+            }
         }
     }
 }

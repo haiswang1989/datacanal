@@ -1,5 +1,6 @@
 package com.canal.instance;
 
+import java.net.UnknownHostException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -10,6 +11,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.zookeeper.CreateMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +30,8 @@ import com.canal.instance.handler.keeper.TableInfoKeeper;
 import com.canal.instance.listener.CDCInstanceListener;
 import com.canal.instance.mysql.DbMetadata;
 import com.datacanal.common.model.BinlogMasterStatus;
+import com.datacanal.common.util.CommonUtils;
+import com.datacanal.common.util.ZkUtil;
 import com.google.code.or.OpenReplicator;
 
 /**
@@ -64,6 +68,8 @@ public class CDCEngine {
     private String dbName;
     //抽取表的名称,多个以逗号隔开
     private String sensitiveTables;
+    //该分片
+    private String zkPath;
     
     //binlog的position同步到ZK的时间间隔
     private int positionSyncZkPeriod;
@@ -72,7 +78,7 @@ public class CDCEngine {
     
     
     /**
-     * java CDCEngine -h 192.168.56.101 -p 3006 -u root -pw 123456 -n test -st person -sp 5
+     * java CDCEngine -h 192.168.56.101 -p 3306 -u root -pw 123456 -n test -st person -sp 5 -zp /datacanal/task/person/person-1
      * 
      * -h   DB的host(必须)
      * -p   DB的port(必须)
@@ -81,6 +87,7 @@ public class CDCEngine {
      * -n   DB的名称(必须)
      * -st  需要抽取DB表的名称
      * -sp  SYNC Position到ZK的时间间隔
+     * -zp  分片在ZK上的路径
      * 
      * @param args
      */
@@ -93,6 +100,8 @@ public class CDCEngine {
         try {
             engine.parseArgs(args);
             engine.setup(engine.dbHost, engine.dbPort, engine.username, engine.password, engine.dbName, engine.zkString);
+            //将自己注册到zookeeper上面
+            engine.registToZookeeper(engine.zkPath);
             TableInfoKeeper.init();
             //设置敏感表
             SensitiveTablesKeeper.setSensitiveTables(engine.parseSensitiveTables(engine.sensitiveTables));
@@ -138,6 +147,7 @@ public class CDCEngine {
         options.addOption("n", true, "DB的名称(必须)");
         options.addOption("st", true, "需要抽取DB表的名称");
         options.addOption("sp", true, "SYNC Position到ZK的时间间隔");
+        options.addOption("zp", true, "分片在zk的路径");
         
         CommandLine cmdLine = parser.parse(options, args);
         
@@ -191,6 +201,12 @@ public class CDCEngine {
         } else {
             positionSyncZkPeriod = DEFAULT_POSITION_SYNC_ZK_PERIOD;
         }
+        
+        if(cmdLine.hasOption("zp")) {
+            zkPath = cmdLine.getOptionValue("zp");
+        } else {
+            throw new ParamException("Db zk Path must provide.");
+        }
     }
     
     /**
@@ -230,6 +246,17 @@ public class CDCEngine {
         openReplicator.setBinlogFileName(binlogMasterStatus.getBinlogName());
         openReplicator.setBinlogPosition(binlogMasterStatus.getPosition());
         openReplicator.setBinlogEventListener(listener);
+    }
+    
+    /**
+     * 
+     * @param path
+     * @param child
+     * @throws UnknownHostException 
+     */
+    public void registToZookeeper(String path) throws UnknownHostException {
+        String localIp = CommonUtils.getLocalIp();
+        ZkUtil.createChildPath(zkClient, path, localIp, "", CreateMode.EPHEMERAL);
     }
     
     /**
