@@ -78,7 +78,7 @@ public class CommonUtils {
      * @param cmd
      * @return
      */
-    public static boolean doExecCmd(String cmd) {
+    public static void doExecCmd(String cmd) {
         LOG.info("Exec cmd [{}] start.", cmd);
         try {
             final Process process = Runtime.getRuntime().exec(cmd);
@@ -113,10 +113,8 @@ public class CommonUtils {
             LOG.error(e.getMessage(), e);
         } catch (InterruptedException e) {
             LOG.error(e.getMessage(), e);
+        } finally {
+            LOG.info("Exec cmd [{}] end.", cmd);
         }
-        
-        LOG.info("Exec cmd [{}] end.", cmd);
-        return true;
     }
-    
 }
