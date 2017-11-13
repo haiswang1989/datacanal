@@ -65,7 +65,8 @@ public class NodeManagerLaucher {
             }
         });
         
-        EnhancedNM enhancedNMServer = new EnhancedNM(laucher.zkClient, laucher.nodeId, laucher.heartbeatSecond, laucher.startInstanceShell);
+        String pidPath = laucher.startInstanceShell.substring(0, laucher.startInstanceShell.lastIndexOf("/start.sh"));
+        EnhancedNM enhancedNMServer = new EnhancedNM(laucher.zkClient, laucher.nodeId, laucher.heartbeatSecond, laucher.startInstanceShell, pidPath);
         Thread t1 = new Thread(enhancedNMServer);
         t1.start();
         

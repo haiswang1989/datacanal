@@ -41,8 +41,8 @@ public class NodeManager {
             .option(ChannelOption.TCP_NODELAY, true);
     }
     
-    public ChannelFuture connect(String ip, int port, String startInstanceShell, ZkClient zkClient) throws InterruptedException {
-        bootstap.handler(new IoOperatorHandler(new HeadWithBodyDecodeHandler(), new InstanceStartHandler(startInstanceShell, zkClient)));
+    public ChannelFuture connect(String ip, int port, String startInstanceShell, ZkClient zkClient, String pidPath) throws InterruptedException {
+        bootstap.handler(new IoOperatorHandler(new HeadWithBodyDecodeHandler(), new InstanceStartHandler(startInstanceShell, zkClient, pidPath)));
         return bootstap.connect(ip, port).sync();
     }
     
