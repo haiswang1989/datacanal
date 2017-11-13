@@ -1,4 +1,4 @@
-package com.canal.instance.manager;
+package com.canal.instance.manager.code;
 
 import java.net.UnknownHostException;
 import org.I0Itec.zkclient.ZkClient;
@@ -11,7 +11,7 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.ImportResource;
 import org.springframework.stereotype.Component;
 
-import com.canal.instance.manager.netty.server.EnhancedNM;
+import com.canal.instance.manager.code.netty.server.EnhancedNM;
 import com.datacanal.common.constant.Consts;
 import com.datacanal.common.util.CommonUtils;
 import com.datacanal.common.util.ZkUtil;

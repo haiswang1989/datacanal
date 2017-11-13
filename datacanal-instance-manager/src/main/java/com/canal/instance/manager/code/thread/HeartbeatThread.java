@@ -1,4 +1,4 @@
-package com.canal.instance.manager.thread;
+package com.canal.instance.manager.code.thread;
 
 import com.canal.serializer.intf.ISerializer;
 import com.datacanal.common.model.Command;

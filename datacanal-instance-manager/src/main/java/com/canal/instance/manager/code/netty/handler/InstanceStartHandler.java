@@ -1,4 +1,4 @@
-package com.canal.instance.manager.netty.handler;
+package com.canal.instance.manager.code.netty.handler;
 
 import java.io.BufferedReader;
 import java.io.File;

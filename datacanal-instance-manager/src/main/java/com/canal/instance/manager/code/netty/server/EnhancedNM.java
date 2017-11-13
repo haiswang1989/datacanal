@@ -1,4 +1,4 @@
-package com.canal.instance.manager.netty.server;
+package com.canal.instance.manager.code.netty.server;
 
 import java.net.ConnectException;
 import java.util.List;
@@ -10,7 +10,7 @@ import org.I0Itec.zkclient.ZkClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.canal.instance.manager.thread.HeartbeatThread;
+import com.canal.instance.manager.code.thread.HeartbeatThread;
 import com.canal.serializer.impl.JSONSerializer;
 import com.canal.serializer.intf.ISerializer;
 import com.datacanal.common.constant.Consts;
