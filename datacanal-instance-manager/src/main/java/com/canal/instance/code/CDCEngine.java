@@ -1,4 +1,4 @@
-package com.canal.instance;
+package com.canal.instance.code;
 
 import java.net.UnknownHostException;
 import java.util.HashSet;
@@ -22,12 +22,12 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.druid.pool.DruidDataSource;
-import com.canal.instance.exception.ParamException;
-import com.canal.instance.handler.keeper.PositionKeeper;
-import com.canal.instance.handler.keeper.SensitiveTablesKeeper;
-import com.canal.instance.handler.keeper.TableInfoKeeper;
-import com.canal.instance.listener.CDCInstanceListener;
-import com.canal.instance.mysql.DbMetadata;
+import com.canal.instance.code.exception.ParamException;
+import com.canal.instance.code.handler.keeper.PositionKeeper;
+import com.canal.instance.code.handler.keeper.SensitiveTablesKeeper;
+import com.canal.instance.code.handler.keeper.TableInfoKeeper;
+import com.canal.instance.code.listener.CDCInstanceListener;
+import com.canal.instance.code.mysql.DbMetadata;
 import com.datacanal.common.constant.Consts;
 import com.datacanal.common.model.BinlogMasterStatus;
 import com.datacanal.common.util.CommonUtils;

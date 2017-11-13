@@ -1,4 +1,4 @@
-package com.canal.instance.handler.impl;
+package com.canal.instance.code.handler.impl;
 
 import java.util.List;
 import java.util.Map;
@@ -7,7 +7,7 @@ import javax.annotation.Resource;
 
 import org.springframework.stereotype.Component;
 
-import com.canal.instance.handler.keeper.TableInfoKeeper;
+import com.canal.instance.code.handler.keeper.TableInfoKeeper;
 import com.canal.serializer.intf.ISerializer;
 import com.datacanal.common.model.CDCEvent;
 import com.datacanal.common.model.TableInfo;

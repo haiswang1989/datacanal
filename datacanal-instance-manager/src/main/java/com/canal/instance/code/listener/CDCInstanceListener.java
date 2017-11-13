@@ -1,12 +1,12 @@
-package com.canal.instance.listener;
+package com.canal.instance.code.listener;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.canal.instance.handler.EventHandler;
-import com.canal.instance.handler.keeper.PositionKeeper;
+import com.canal.instance.code.handler.EventHandler;
+import com.canal.instance.code.handler.keeper.PositionKeeper;
 import com.google.code.or.binlog.BinlogEventV4;
 
 /**

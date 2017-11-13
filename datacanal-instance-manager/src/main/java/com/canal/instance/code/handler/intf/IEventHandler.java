@@ -1,4 +1,4 @@
-package com.canal.instance.handler.intf;
+package com.canal.instance.code.handler.intf;
 
 import com.google.code.or.binlog.BinlogEventV4;
 

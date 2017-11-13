@@ -7,7 +7,6 @@
 	
 	
 	<modules>
-		<module>datacanal-instance</module>
 		<module>datacanal-center</module>
 		<module>datacanal-sink</module>
 		<module>datacanal-serializer</module>

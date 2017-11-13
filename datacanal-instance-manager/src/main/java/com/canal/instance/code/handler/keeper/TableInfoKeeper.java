@@ -1,10 +1,10 @@
-package com.canal.instance.handler.keeper;
+package com.canal.instance.code.handler.keeper;
 
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.canal.instance.mysql.DbMetadata;
+import com.canal.instance.code.mysql.DbMetadata;
 import com.datacanal.common.model.ColumnInfo;
 import com.datacanal.common.model.TableInfo;
 import com.google.code.or.binlog.impl.event.TableMapEvent;

@@ -1,4 +1,4 @@
-package com.canal.instance.exception;
+package com.canal.instance.code.exception;
 
 /**
  * 启动参数异常

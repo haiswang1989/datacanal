@@ -1,4 +1,4 @@
-package com.canal.instance.mysql;
+package com.canal.instance.code.mysql;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;

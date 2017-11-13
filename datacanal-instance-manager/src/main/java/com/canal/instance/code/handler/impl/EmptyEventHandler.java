@@ -1,4 +1,4 @@
-package com.canal.instance.handler.impl;
+package com.canal.instance.code.handler.impl;
 
 import org.springframework.stereotype.Component;
 

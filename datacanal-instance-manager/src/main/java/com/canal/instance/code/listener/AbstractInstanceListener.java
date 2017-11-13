@@ -1,4 +1,4 @@
-package com.canal.instance.listener;
+package com.canal.instance.code.listener;
 
 import com.google.code.or.binlog.BinlogEventListener;
 

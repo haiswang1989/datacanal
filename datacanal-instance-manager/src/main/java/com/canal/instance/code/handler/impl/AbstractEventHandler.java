@@ -1,4 +1,4 @@
-package com.canal.instance.handler.impl;
+package com.canal.instance.code.handler.impl;
 
 import java.util.HashMap;
 import java.util.List;
@@ -7,9 +7,9 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.canal.instance.handler.intf.IEventHandler;
-import com.canal.instance.handler.keeper.SensitiveTablesKeeper;
-import com.canal.instance.handler.keeper.TableInfoKeeper;
+import com.canal.instance.code.handler.intf.IEventHandler;
+import com.canal.instance.code.handler.keeper.SensitiveTablesKeeper;
+import com.canal.instance.code.handler.keeper.TableInfoKeeper;
 import com.datacanal.common.model.ColumnInfo;
 import com.google.code.or.common.glossary.Column;
 

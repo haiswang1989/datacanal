@@ -1,16 +1,16 @@
-package com.canal.instance.handler;
+package com.canal.instance.code.handler;
 
 import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.canal.instance.handler.impl.AbstractEventHandler;
-import com.canal.instance.handler.impl.DeleteRowsEventHandler;
-import com.canal.instance.handler.impl.EmptyEventHandler;
-import com.canal.instance.handler.impl.TableMapEventHandler;
-import com.canal.instance.handler.impl.UpdateRowsEventHandler;
-import com.canal.instance.handler.impl.WriteRowsEventHandler;
+import com.canal.instance.code.handler.impl.AbstractEventHandler;
+import com.canal.instance.code.handler.impl.DeleteRowsEventHandler;
+import com.canal.instance.code.handler.impl.EmptyEventHandler;
+import com.canal.instance.code.handler.impl.TableMapEventHandler;
+import com.canal.instance.code.handler.impl.UpdateRowsEventHandler;
+import com.canal.instance.code.handler.impl.WriteRowsEventHandler;
 import com.google.code.or.binlog.BinlogEventV4;
 import com.google.code.or.common.util.MySQLConstants;
 

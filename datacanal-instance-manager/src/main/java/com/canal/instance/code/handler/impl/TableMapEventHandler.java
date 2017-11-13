@@ -1,8 +1,8 @@
-package com.canal.instance.handler.impl;
+package com.canal.instance.code.handler.impl;
 
 import org.springframework.stereotype.Component;
 
-import com.canal.instance.handler.keeper.TableInfoKeeper;
+import com.canal.instance.code.handler.keeper.TableInfoKeeper;
 import com.google.code.or.binlog.BinlogEventV4;
 import com.google.code.or.binlog.impl.event.TableMapEvent;
 
