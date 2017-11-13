@@ -54,7 +54,8 @@ public class InstanceStartHandler extends ChannelHandlerAdapter {
         if(eventType == EventType.INSTANCE_START) {
             String physicsTable = (String)command.getObj();
             LOG.info("Get start instance command ,table name : " + physicsTable);
-            startInstance(physicsTable);
+            boolean isOnline = startInstance(physicsTable);
+            LOG.info("Is start success : {}", isOnline);
         } else {
             ctx.fireChannelRead(msg);
         }
@@ -121,7 +122,21 @@ public class InstanceStartHandler extends ChannelHandlerAdapter {
      * @throws IOException
      */
     private boolean checkPidInProcess(String pid) throws IOException {
-        InputStream inputStream = Runtime.getRuntime().exec("jps").getInputStream();
+        final Process process = Runtime.getRuntime().exec("jps");
+        InputStream inputStream = process.getInputStream();
+        new Thread(new Runnable() { //这边把错误流读取掉,不然可能出现堵塞
+            @Override
+            public void run() {
+                try (BufferedReader br = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
+                    String lineContent = null;
+                    while(null!=(lineContent=br.readLine())) {
+                        LOG.info(lineContent);
+                    }
+                } catch (IOException e) {
+                }
+            }
+        }).start();
+        
         BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
         String line = null;
         while(null!=(line=br.readLine())) {

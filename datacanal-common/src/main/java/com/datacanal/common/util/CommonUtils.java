@@ -1,6 +1,8 @@
 package com.datacanal.common.util;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.HashSet;
@@ -77,8 +79,35 @@ public class CommonUtils {
      * @return
      */
     public static boolean doExecCmd(String cmd) {
+        LOG.info("Exec cmd [{}] start.", cmd);
         try {
-            Process process = Runtime.getRuntime().exec(cmd);
+            final Process process = Runtime.getRuntime().exec(cmd);
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try(BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                        String lineContent = null;
+                        while(null!=(br.readLine())) {
+                            LOG.info("std : " + lineContent);
+                        }
+                    } catch (IOException e) {
+                    }
+                }
+            }).start();
+            
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try(BufferedReader br = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
+                        String lineContent = null;
+                        while(null!=(br.readLine())) {
+                            LOG.info("err : " + lineContent);
+                        }
+                    } catch (IOException e) {
+                    }
+                }
+            }).start();
+            
             process.waitFor();
         } catch (IOException e) {
             LOG.error(e.getMessage(), e);
@@ -86,6 +115,7 @@ public class CommonUtils {
             LOG.error(e.getMessage(), e);
         }
         
+        LOG.info("Exec cmd [{}] end.", cmd);
         return true;
     }
     
