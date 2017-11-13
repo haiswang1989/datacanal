@@ -167,7 +167,7 @@ public class CDCEngine {
     }
     
     /**
-     * 
+     * 注册自己到zookeeper上面
      * @param path
      * @param child
      * @throws UnknownHostException 
@@ -180,7 +180,7 @@ public class CDCEngine {
     }
     
     /**
-     * 目标数据库的datasource
+     * 构造目标数据库的datasource
      * @param host
      * @param port
      * @param username
@@ -204,7 +204,7 @@ public class CDCEngine {
     }
     
     /**
-     * 
+     * 解析敏感表
      * @param sensitiveTables
      * @return
      */
@@ -278,7 +278,7 @@ public class CDCEngine {
             throw new ParamException("Db sensitive tables must provide.");
         }
         
-        if(cmdLine.hasOption("zp")) {
+        if(cmdLine.hasOption("zp")) { //task对于的zk的路径
             zkPath = cmdLine.getOptionValue("zp");
         } else {
             throw new ParamException("Db zk Path must provide.");
