@@ -99,7 +99,7 @@ public class CanalCenterLauncher {
         taskCache.loadTask(launcher.zkClient);
         
         //心跳检测
-        Executors.newScheduledThreadPool(1).scheduleAtFixedRate(new CheckHeartbeatThread(launcher.maxHeartbeat), 0l, launcher.checkHearbeatPeriod, TimeUnit.SECONDS);
+        Executors.newScheduledThreadPool(1).scheduleAtFixedRate(new CheckHeartbeatThread(launcher.maxHeartbeat, launcher.zkClient), 0l, launcher.checkHearbeatPeriod, TimeUnit.SECONDS);
         
         //instance启动命令处理
         HandleCommandThread handleCommand = new HandleCommandThread(launcher.selector, launcher.serializer);

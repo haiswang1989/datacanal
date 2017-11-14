@@ -19,7 +19,7 @@ public class ZkUtil {
      * @param childPath
      * @param value
      */
-    public static void createChildPath(ZkClient zkClient, String parentPath, String childPath, String value, CreateMode mode) {
+    public static void createChildPath(ZkClient zkClient, String parentPath, String childPath, Object value, CreateMode mode) {
         StringBuilder createPath = new StringBuilder();
         createPath.append(parentPath).append(Consts.ZK_PATH_SEPARATOR).append(childPath);
         zkClient.create(createPath.toString(), value, mode);

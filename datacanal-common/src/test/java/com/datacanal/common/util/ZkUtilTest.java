@@ -10,6 +10,7 @@ import org.testng.annotations.Test;
 
 import com.alibaba.fastjson.JSON;
 import com.datacanal.common.model.DbInfo;
+import com.datacanal.common.model.Status;
 
 public class ZkUtilTest {
     
@@ -51,8 +52,12 @@ public class ZkUtilTest {
     
     @Test
     public void testExecCmd() {
-        
         CommonUtils.doExecCmd("dir");
-        
+    }
+    
+    @Test
+    public void testModifyData() {
+        zkClient.writeData("/datacanal/task/person/person-1/instance/10000", Status.STOP);
+        System.out.println("Over...");
     }
 }

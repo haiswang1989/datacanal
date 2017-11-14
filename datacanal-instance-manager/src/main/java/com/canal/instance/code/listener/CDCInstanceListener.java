@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 
 import com.canal.instance.code.handler.EventHandler;
 import com.canal.instance.code.handler.keeper.PositionKeeper;
+import com.datacanal.common.model.Status;
 import com.google.code.or.binlog.BinlogEventV4;
 
 /**
@@ -28,6 +29,11 @@ public class CDCInstanceListener extends AbstractInstanceListener {
     public void onEvents(BinlogEventV4 event) {
         if(null==event) {
             LOG.warn("Event is null.");
+            return;
+        }
+        
+        if(PositionKeeper.getStatus() == Status.STOP) {
+            LOG.info("Need to stop.");
             return;
         }
         

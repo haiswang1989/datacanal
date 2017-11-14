@@ -28,9 +28,10 @@ import com.canal.instance.code.handler.keeper.SensitiveTablesKeeper;
 import com.canal.instance.code.handler.keeper.TableInfoKeeper;
 import com.canal.instance.code.listener.CDCInstanceListener;
 import com.canal.instance.code.mysql.DbMetadata;
+import com.canal.instance.code.zklistener.StatusListener;
 import com.datacanal.common.constant.Consts;
 import com.datacanal.common.model.BinlogMasterStatus;
-import com.datacanal.common.util.CommonUtils;
+import com.datacanal.common.model.Status;
 import com.datacanal.common.util.ZkUtil;
 import com.google.code.or.OpenReplicator;
 
@@ -56,6 +57,9 @@ public class CDCEngine {
     //binlog的position同步到ZK的时间间隔
     @Value("${sync.period}")
     private int positionSyncZkPeriod;
+    
+    @Value("${node.id}")
+    private int nodeId;
     
     private OpenReplicator openReplicator;
     private ZkClient zkClient;
@@ -173,10 +177,13 @@ public class CDCEngine {
      * @throws UnknownHostException 
      */
     private void registToZookeeper(String path) throws UnknownHostException {
-        String localIp = CommonUtils.getLocalIp();
-        StringBuilder registPath = new StringBuilder();
-        registPath.append(path).append(Consts.ZK_PATH_SEPARATOR).append(Consts.DATACANAL_TASK_INSTANCE);
-        ZkUtil.createChildPath(zkClient, registPath.toString(), localIp, "", CreateMode.EPHEMERAL);
+        StringBuilder pathBuilder = new StringBuilder();
+        pathBuilder.append(path).append(Consts.ZK_PATH_SEPARATOR).append(Consts.DATACANAL_TASK_INSTANCE);
+        ZkUtil.createChildPath(zkClient, pathBuilder.toString(), String.valueOf(nodeId), Status.RUNNING, CreateMode.EPHEMERAL);
+        //捕获该instance的status的变化
+        //center可能更新该值,让instance停止
+        pathBuilder.append(Consts.ZK_PATH_SEPARATOR).append(nodeId);
+        zkClient.subscribeDataChanges(pathBuilder.toString(), new StatusListener(positionSyncZkPeriod));
     }
     
     /**

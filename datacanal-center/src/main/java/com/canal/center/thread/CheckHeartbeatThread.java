@@ -1,13 +1,17 @@
 package com.canal.center.thread;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.I0Itec.zkclient.ZkClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.canal.center.cache.ChannelHeartbeatCache;
+import com.datacanal.common.constant.Consts;
+import com.datacanal.common.model.Status;
 
 import io.netty.channel.Channel;
 
@@ -24,8 +28,11 @@ public class CheckHeartbeatThread implements Runnable {
     
     private int maxHeartbeat;
     
-    public CheckHeartbeatThread(int maxHeartbeatArg) {
+    private ZkClient zkClient;
+    
+    public CheckHeartbeatThread(int maxHeartbeatArg, ZkClient zkClientArg) {
         this.maxHeartbeat = maxHeartbeatArg;
+        this.zkClient = zkClientArg;
     }
     
     @Override
@@ -56,6 +63,41 @@ public class CheckHeartbeatThread implements Runnable {
             }
         }
         
-        //TODO stop运行在结点上的instance
+        //stop运行在结点上的instance
+        for (String nodeId : lostNode) {
+            stopNodeInstance(nodeId);
+        }
+    }
+    
+    /**
+     * 
+     * @param nodeId
+     */
+    public void stopNodeInstance(String nodeId) {
+        List<String> logicTables = zkClient.getChildren(Consts.DATACANAL_TASK);
+        StringBuilder fullLogicTable = new StringBuilder();
+        for (String logicTable : logicTables) {
+            fullLogicTable.setLength(0);
+            fullLogicTable.append(Consts.DATACANAL_TASK).append(Consts.ZK_PATH_SEPARATOR).append(logicTable);
+            List<String> physicsTables = zkClient.getChildren(fullLogicTable.toString());
+            StringBuilder fullPhysicsTableInstance = new StringBuilder();
+            for (String physicsTable : physicsTables) {
+                fullPhysicsTableInstance.setLength(0);
+                fullPhysicsTableInstance.append(fullLogicTable.toString())
+                    .append(Consts.ZK_PATH_SEPARATOR).append(physicsTable)
+                    .append(Consts.ZK_PATH_SEPARATOR).append(Consts.DATACANAL_TASK_INSTANCE);
+                
+                List<String> instanceNodeId = zkClient.getChildren(fullPhysicsTableInstance.toString());
+                if(null!=instanceNodeId && 0!=instanceNodeId.size()) {
+                    String currNodeId = instanceNodeId.get(0);
+                    if(nodeId.equals(currNodeId)) {
+                        //该分片运行在挂掉的结点上
+                        String targetPath = fullPhysicsTableInstance.toString() + Consts.ZK_PATH_SEPARATOR + currNodeId;
+                        //让其停止
+                        zkClient.writeData(targetPath, Status.STOP);
+                    }
+                }
+            }
+        }
     }
 }

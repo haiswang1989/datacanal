@@ -25,7 +25,4 @@ public class Heartbeat {
     
     //当前机器的网络资源
     private NetworkResource networkResource;
-    
-    
-    
 }
