@@ -27,10 +27,6 @@ public class HeartbeatHandler extends ChannelHandlerAdapter {
         if(eventType == EventType.HEART_BEAT) {
             String jsonString = JSON.toJSONString(command.getObj()); 
             Heartbeat heartbeat = JSON.parseObject(jsonString, Heartbeat.class);
-            
-            //打印心跳信息
-            System.out.println("Heart beat," + heartbeat.toString());
-            
             String nodeId = heartbeat.getNodeId();
             Channel channel = ctx.channel();
             long lastHeartbeatTime = heartbeat.getHeartbeatTime();

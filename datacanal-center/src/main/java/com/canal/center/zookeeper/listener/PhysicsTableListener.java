@@ -58,8 +58,7 @@ public class PhysicsTableListener implements IZkChildListener {
             if(zkClient.exists(add)) {
                 //instance挂载的目录
                 StringBuilder instancePath = new StringBuilder();
-                instancePath.append(add).append(Consts.ZK_PATH_SEPARATOR).append("instance");
-                
+                instancePath.append(add).append(Consts.ZK_PATH_SEPARATOR).append(Consts.DATACANAL_TASK_INSTANCE);
                 zkClient.subscribeChildChanges(instancePath.toString(), new InstancListener(zkClient));
                 //添加新的分片,需要到其他node上启动instance
                 Command command = new Command();

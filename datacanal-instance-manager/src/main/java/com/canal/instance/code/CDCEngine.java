@@ -163,10 +163,12 @@ public class CDCEngine {
         //获取master生成的binlog的信息
         BinlogMasterStatus binlogMasterStatus = DbMetadata.getBinlongMasterStatus();
         openReplicator.setBinlogFileName(binlogMasterStatus.getBinlogName());
+        if(PositionKeeper.getPosition() == 0l) { //如果postion是一个初始化的状态,那么直接用从数据库中获取到的position
+            openReplicator.setBinlogPosition(binlogMasterStatus.getPosition());
+        } else { //否则使用zookeeper上的position
+            openReplicator.setBinlogPosition(PositionKeeper.getPosition());
+        }
         
-        openReplicator.setBinlogPosition(binlogMasterStatus.getPosition());
-        //TODO
-        //openReplicator.setBinlogPosition(PositionKeeper.getPosition());
         openReplicator.setBinlogEventListener(listener);
     }
     

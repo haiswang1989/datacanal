@@ -61,6 +61,9 @@ public class EnhancedNM implements Runnable {
     
     @Override
     public void run() {
+        
+        boolean needShutDown = false;
+        
         while(true) {
             String centerServer = getCenterIpPort();
             //当前没有center注册在zookeeper中
@@ -85,6 +88,7 @@ public class EnhancedNM implements Runnable {
                     scheduledES.scheduleAtFixedRate(new HeartbeatThread(channel, serializer, this.nodeId), 0, this.heartbeatSecond, TimeUnit.SECONDS);
                     channel.closeFuture().sync();
                 } catch (InterruptedException e) {
+                    needShutDown = true;
                     continue;
                 } catch (Exception e) {
                     if(e instanceof ConnectException) {
@@ -99,11 +103,14 @@ public class EnhancedNM implements Runnable {
                         throw e;
                     }
                 } finally {
-                    //TODO 当出现"ConnectException"这边会重复关闭,创建
-                    //关闭心跳任务
-                    scheduledES.shutdownNow();
-                    //重新开启一个循环定时执行器
-                    scheduledES = Executors.newScheduledThreadPool(1);
+                    if(needShutDown) { //如果是连接失败,那么这边不需要关闭ThreadPool然后重新创建
+                        //关闭心跳任务
+                        scheduledES.shutdownNow();
+                        //重新开启一个循环定时执行器
+                        scheduledES = Executors.newScheduledThreadPool(1);
+                        needShutDown = false;
+                    }
+                    
                 }
             }
         }

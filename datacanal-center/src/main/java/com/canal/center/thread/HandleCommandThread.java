@@ -60,7 +60,11 @@ public class HandleCommandThread implements Runnable {
         while(true) {
             if(null!=(nodeId=selector.select())) {
                 Channel channel = ChannelHeartbeatCache.instance().getNodeIdToChannel().get(nodeId);
-                //TODO 在某些极限情况下会出现channel为null的情况
+                //解决在被select到的同时被"因为心跳断开"而被清除的情况而导致的问题
+                if(null==channel) {
+                    continue;
+                }
+                
                 LOG.info("Instance start, command : " + command + ", nodeid : " + nodeId);
                 byte[] body = serializer.encode(command);
                 int bodyLength = body.length;
