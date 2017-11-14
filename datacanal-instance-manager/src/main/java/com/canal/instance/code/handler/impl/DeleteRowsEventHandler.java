@@ -28,7 +28,7 @@ import com.google.code.or.common.glossary.Row;
 @Component
 public class DeleteRowsEventHandler extends AbstractEventHandler {
     
-    @Resource(name="avroSerializer")
+    @Resource(name="jsonSerializer")
     private ISerializer<CDCEvent> serializer;
     
     @Resource(name="kafkaSender")

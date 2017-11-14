@@ -2,8 +2,6 @@ package com.canal.serializer.impl;
 
 import org.springframework.stereotype.Component;
 
-import com.alibaba.fastjson.JSON;
-
 /**
  * 采用Avro序列化框架进行序列化与反序列化
  * 
@@ -16,15 +14,11 @@ public class AvroSerializer<T> extends AbstractSerializer<T> {
 
     @Override
     public byte[] encode(T event) {
-        //TODO
-        String jsonString = JSON.toJSONString(event);
-        return jsonString.getBytes();
+        return null;
     }
 
     @Override
     public T decode(byte[] b, Class<T> clazz) {
-        //TODO 
-        String jsonString = new String(b);
-        return JSON.parseObject(jsonString, clazz);
+        return null;
     }
 }
