@@ -54,7 +54,7 @@ public class DeleteRowsEventHandler extends AbstractEventHandler {
                 cdcEvent.setIsDdl(false);
                 cdcEvent.setSql(null);
                 cdcEvent.setBefore(beforeMap);
-                sender.send(tableInfo.getFullName(), serializer.encode(cdcEvent));
+                sender.sendKafka(tableInfo.getFullName(), serializer.encode(cdcEvent));
             }
         }
     }

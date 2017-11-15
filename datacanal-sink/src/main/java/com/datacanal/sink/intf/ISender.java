@@ -9,6 +9,8 @@ package com.datacanal.sink.intf;
  */
 public interface ISender {
     
-    public void send(String topic, byte[] message);
+    public void send();
+    
+    public void sendKafka(String topic, byte[] message);
     
 }

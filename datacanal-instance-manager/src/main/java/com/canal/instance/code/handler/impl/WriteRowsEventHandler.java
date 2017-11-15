@@ -52,7 +52,7 @@ public class WriteRowsEventHandler extends AbstractEventHandler {
                 cdcEvent.setIsDdl(false);
                 cdcEvent.setSql(null);
                 cdcEvent.setAfter(afterMap);
-                sender.send(tableInfo.getFullName(), serializer.encode(cdcEvent));
+                sender.sendKafka(tableInfo.getFullName(), serializer.encode(cdcEvent));
             }
         }
     }

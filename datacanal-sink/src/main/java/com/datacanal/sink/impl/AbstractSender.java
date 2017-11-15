@@ -10,5 +10,13 @@ import com.datacanal.sink.intf.ISender;
  * @date 2017年10月24日 下午12:15:04
  */
 public abstract class AbstractSender implements ISender {
-
+    
+    @Override
+    public void send() {
+    }
+    
+    @Override
+    public void sendKafka(String topic, byte[] message) {
+    }
+    
 }

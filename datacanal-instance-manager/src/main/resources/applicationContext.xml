@@ -18,4 +18,13 @@
 	    </property>  
 	</bean>  
     
+    <bean id="kafkaSender" class="com.datacanal.sink.impl.KafkaSender" init-method="init">
+        <property name="prop">
+            <props>
+                <prop key="metadata.broker.list">${kafka.metadata.broker.list}</prop>
+                <prop key="request.required.acks">${kafka.request.required.acks}</prop>
+                <prop key="key.serializer.class">${kakfa.key.serializer.class}</prop>
+            </props>
+        </property>
+    </bean>
 </beans>

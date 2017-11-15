@@ -59,7 +59,7 @@ public class UpdateRowsEventHandler extends AbstractEventHandler {
                 cdcEvent.setSql(null);
                 cdcEvent.setBefore(beforeMap);
                 cdcEvent.setAfter(afterMap);
-                sender.send(tableInfo.getFullName(), serializer.encode(cdcEvent));
+                sender.sendKafka(tableInfo.getFullName(), serializer.encode(cdcEvent));
             }
         }
     }
