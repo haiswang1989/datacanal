@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import com.alibaba.fastjson.JSON;
 import com.canal.center.cache.TaskCache;
+import com.datacanal.common.constant.Consts;
 import com.datacanal.common.model.Command;
 import com.datacanal.common.model.DbInfo;
 import com.datacanal.common.model.EventType;
@@ -40,17 +41,18 @@ public class InstancListener implements IZkChildListener {
         
         //instance下线了,需要重新在其他机器启动
         if(null==currentChilds || 0==currentChilds.size()) {
-            String dbInfos = zkClient.readData(parentPath);
+            //DB信息存储的结点
+            String dbInfoPath = parentPath.substring(0, parentPath.lastIndexOf(Consts.ZK_PATH_SEPARATOR + Consts.DATACANAL_TASK_INSTANCE));
+            String dbInfos = zkClient.readData(dbInfoPath);
             //目标数据库的信息
             DbInfo dbInfo = JSON.parseObject(dbInfos, DbInfo.class);
             LOG.error("instance is lost, need restart in other node, DBInfo : " + dbInfo.toString());
-            
             
             //添加新的分片,需要到其他node上启动instance
             Command command = new Command();
             command.setEventType(EventType.INSTANCE_START);
             //传递的是physics的路径,也就是parentPath父亲路径
-            command.setObj(parentPath.substring(0, parentPath.lastIndexOf("/instance")));
+            command.setObj(dbInfoPath);
             LOG.info("Add command : " + command.toString());
             TaskCache.instance().getCommands().offer(command);
             
