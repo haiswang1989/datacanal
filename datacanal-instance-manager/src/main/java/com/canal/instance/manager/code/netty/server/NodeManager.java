@@ -2,9 +2,7 @@ package com.canal.instance.manager.code.netty.server;
 
 import org.I0Itec.zkclient.ZkClient;
 
-import com.canal.instance.manager.code.netty.handler.InstanceStartHandler;
-import com.datacanal.common.netty.handler.HeadWithBodyDecodeHandler;
-import com.datacanal.common.netty.handler.IoOperatorHandler;
+import com.canal.instance.manager.code.netty.handler.ClientChannelInitializer;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
@@ -42,7 +40,7 @@ public class NodeManager {
     }
     
     public ChannelFuture connect(String ip, int port, String startInstanceShell, ZkClient zkClient, String pidPath) throws InterruptedException {
-        bootstap.handler(new IoOperatorHandler(new HeadWithBodyDecodeHandler(), new InstanceStartHandler(startInstanceShell, zkClient, pidPath)));
+        bootstap.handler(new ClientChannelInitializer(startInstanceShell, zkClient, pidPath));
         return bootstap.connect(ip, port).sync();
     }
     

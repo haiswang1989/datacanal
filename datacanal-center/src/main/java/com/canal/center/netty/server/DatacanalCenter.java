@@ -1,9 +1,6 @@
 package com.canal.center.netty.server;
 
-import com.canal.center.netty.handler.HeartbeatHandler;
-import com.datacanal.common.netty.handler.HeadWithBodyDecodeHandler;
-import com.datacanal.common.netty.handler.IoOperatorHandler;
-
+import com.canal.center.netty.handler.ServerChannelInitializer;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelOption;
@@ -59,7 +56,7 @@ public class DatacanalCenter {
         serverBootstrap.group(bossGroup, workerGroup)
             .channel(NioServerSocketChannel.class)
             .option(ChannelOption.SO_BACKLOG, 1024)
-            .childHandler(new IoOperatorHandler(new HeadWithBodyDecodeHandler(), new HeartbeatHandler()));
+            .childHandler(new ServerChannelInitializer());
     }
     
     /**
