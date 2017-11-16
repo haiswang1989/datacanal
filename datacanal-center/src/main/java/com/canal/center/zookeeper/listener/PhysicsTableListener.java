@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.I0Itec.zkclient.IZkChildListener;
 import org.I0Itec.zkclient.ZkClient;
+import org.apache.zookeeper.CreateMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,9 +58,17 @@ public class PhysicsTableListener implements IZkChildListener {
         for (String add : adds) {
             if(zkClient.exists(add)) {
                 //instance挂载的目录
-                StringBuilder instancePath = new StringBuilder();
-                instancePath.append(add).append(Consts.ZK_PATH_SEPARATOR).append(Consts.DATACANAL_TASK_INSTANCE);
-                zkClient.subscribeChildChanges(instancePath.toString(), new InstancListener(zkClient));
+                StringBuilder tmpPath = new StringBuilder();
+                tmpPath.append(add).append(Consts.ZK_PATH_SEPARATOR).append(Consts.DATACANAL_TASK_INSTANCE);
+                //创建instance结点
+                zkClient.create(tmpPath.toString(), "", CreateMode.PERSISTENT);
+                //监控instance结点
+                zkClient.subscribeChildChanges(tmpPath.toString(), new InstancListener(zkClient));
+                //创建position结点
+                tmpPath.setLength(0);
+                tmpPath.append(add).append(Consts.ZK_PATH_SEPARATOR).append(Consts.DATACANAL_TASK_POSITION);
+                zkClient.create(tmpPath.toString(), 0l, CreateMode.PERSISTENT);
+                
                 //添加新的分片,需要到其他node上启动instance
                 Command command = new Command();
                 command.setEventType(EventType.INSTANCE_START);
