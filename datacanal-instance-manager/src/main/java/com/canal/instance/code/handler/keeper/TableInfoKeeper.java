@@ -9,6 +9,8 @@ import com.datacanal.common.model.ColumnInfo;
 import com.datacanal.common.model.TableInfo;
 import com.google.code.or.binlog.impl.event.TableMapEvent;
 
+import lombok.Getter;
+
 /**
  * 保存TABLE_MAP_EVENT中提取到的的信息
  * 
@@ -24,11 +26,15 @@ public class TableInfoKeeper {
     //表名和表的字段集合的映射
     private static Map<String,List<ColumnInfo>> tableNameToColumns = new ConcurrentHashMap<>();
     
+    @Getter
+    private static String binlogName;
+    
     /**
      * 初始化表结构
      */
-    public static void init() {
+    public static void init(String binlogNameArg) {
         tableNameToColumns = DbMetadata.getColumns();
+        binlogName = binlogNameArg;
     }
     
     /**

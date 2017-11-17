@@ -65,6 +65,9 @@ public class CDCEngine {
     private OpenReplicator openReplicator;
     private ZkClient zkClient;
     
+    //binlog的name
+    private String binlogFileName;
+    
     //DB的host
     private String dbHost;
     //DB的端口
@@ -131,7 +134,7 @@ public class CDCEngine {
         initJdbc();
         initOpenReplicator();
         
-        TableInfoKeeper.init();
+        TableInfoKeeper.init(binlogFileName);
         //设置敏感表
         SensitiveTablesKeeper.setSensitiveTables(parseSensitiveTables(sensitiveTables));
         //position
@@ -171,6 +174,7 @@ public class CDCEngine {
         }
         
         openReplicator.setBinlogEventListener(listener);
+        binlogFileName = openReplicator.getBinlogFileName();
     }
     
     /**

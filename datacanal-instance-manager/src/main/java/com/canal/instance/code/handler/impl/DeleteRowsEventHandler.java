@@ -50,7 +50,7 @@ public class DeleteRowsEventHandler extends AbstractEventHandler {
             Map<String,String> beforeMap = getMap(before,databaseName,tableName);
             
             if(beforeMap !=null && beforeMap.size()>0){
-                CDCEvent cdcEvent = new CDCEvent(deleteRowsEvent,databaseName,tableName);
+                CDCEvent cdcEvent = new CDCEvent(deleteRowsEvent,databaseName,tableName, TableInfoKeeper.getBinlogName());
                 cdcEvent.setIsDdl(false);
                 cdcEvent.setSql(null);
                 cdcEvent.setBefore(beforeMap);

@@ -49,7 +49,7 @@ public class WriteRowsEventHandlerV2 extends AbstractEventHandler {
             List<Column> after = row.getColumns();
             Map<String,String> afterMap = getMap(after,databaseName,tableName);
             if(afterMap!=null && afterMap.size()>0){
-                CDCEvent cdcEvent = new CDCEvent(writeRowsEvent,databaseName,tableName);
+                CDCEvent cdcEvent = new CDCEvent(writeRowsEvent,databaseName,tableName, TableInfoKeeper.getBinlogName());
                 cdcEvent.setIsDdl(false);
                 cdcEvent.setSql(null);
                 cdcEvent.setAfter(afterMap);

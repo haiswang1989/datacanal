@@ -23,7 +23,7 @@ public class CDCEvent {
     private int eventType = 0;//事件类型
     private long timestamp = 0;//事件发生的时间戳[MySQL服务器的时间]
     private long timestampReceipt = 0;//Open-replicator接收到的时间戳[CDC执行的时间戳]
-//    private String binlogName = null;// binlog file name
+    private String binlogName = null;// binlog file name
     private long position = 0;
     private long nextPostion = 0;
     private long serverId = 0;
@@ -35,24 +35,22 @@ public class CDCEvent {
     private static AtomicLong uuid = new AtomicLong(0);
     public CDCEvent(){}
 
-    public CDCEvent(final AbstractBinlogEventV4 are, String databaseName, String tableName){
+    public CDCEvent(final AbstractBinlogEventV4 are, String databaseName, String tableName, String binlogName){
         this.init(are);
         this.databaseName = databaseName;
         this.tableName = tableName;
+        this.binlogName = binlogName;
     }
 
     private void init(final BinlogEventV4 be){
         this.eventId = uuid.getAndAdd(1);
         BinlogEventV4Header header = be.getHeader();
-
         this.timestamp = header.getTimestamp();
         this.eventType = header.getEventType();
         this.serverId = header.getServerId();
         this.timestampReceipt = header.getTimestampOfReceipt();
         this.position = header.getPosition();
         this.nextPostion = header.getNextPosition();
-        
-//        this.binlogName = header.get
     }
 
     @Override
@@ -64,7 +62,7 @@ public class CDCEvent {
         builder.append(",eventType:").append(eventType);
         builder.append(",timestamp:").append(timestamp);
         builder.append(",timestampReceipt:").append(timestampReceipt);
-//        builder.append(",binlogName:").append(binlogName);
+        builder.append(",binlogName:").append(binlogName);
         builder.append(",position:").append(position);
         builder.append(",nextPostion:").append(nextPostion);
         builder.append(",serverId:").append(serverId);

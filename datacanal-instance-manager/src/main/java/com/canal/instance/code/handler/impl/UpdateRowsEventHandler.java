@@ -54,7 +54,7 @@ public class UpdateRowsEventHandler extends AbstractEventHandler {
             Map<String,String> afterMap = getMap(colsAfter,databaseName,tableName);
             
             if(beforeMap!=null && afterMap!=null && beforeMap.size()>0 && afterMap.size()>0) {
-                CDCEvent cdcEvent = new CDCEvent(updateRowsEvent,databaseName,tableName);
+                CDCEvent cdcEvent = new CDCEvent(updateRowsEvent,databaseName,tableName, TableInfoKeeper.getBinlogName());
                 cdcEvent.setIsDdl(false);
                 cdcEvent.setSql(null);
                 cdcEvent.setBefore(beforeMap);
