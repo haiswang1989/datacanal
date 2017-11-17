@@ -43,10 +43,16 @@ public class EventHandler extends AbstractEventHandler {
     
     @PostConstruct
     public void init() {
-        eventHandlers[MySQLConstants.DELETE_ROWS_EVENT] = deleteRowsEventHandler;
-        eventHandlers[MySQLConstants.TABLE_MAP_EVENT] = tableMapEventHandler;
-        eventHandlers[MySQLConstants.UPDATE_ROWS_EVENT] = updateRowsEventHandler;
+        //这部分是针对mysql5.6以前的版本
         eventHandlers[MySQLConstants.WRITE_ROWS_EVENT] = writeRowsEventHandler;
+        eventHandlers[MySQLConstants.DELETE_ROWS_EVENT] = deleteRowsEventHandler;
+        eventHandlers[MySQLConstants.UPDATE_ROWS_EVENT] = updateRowsEventHandler;
+        
+        eventHandlers[MySQLConstants.TABLE_MAP_EVENT] = tableMapEventHandler;
+        //这部分是针对mysql5.6的版本
+        eventHandlers[MySQLConstants.DELETE_ROWS_EVENT_V2] = deleteRowsEventHandler;
+        eventHandlers[MySQLConstants.UPDATE_ROWS_EVENT_V2] = updateRowsEventHandler;
+        eventHandlers[MySQLConstants.WRITE_ROWS_EVENT_V2] = writeRowsEventHandler;
     }
     
     @Override
