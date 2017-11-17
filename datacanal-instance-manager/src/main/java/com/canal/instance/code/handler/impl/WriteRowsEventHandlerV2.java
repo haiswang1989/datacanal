@@ -45,6 +45,7 @@ public class WriteRowsEventHandlerV2 extends AbstractEventHandler {
         
         List<Row> rows = writeRowsEvent.getRows();
         for (Row row : rows) {
+            //insert操作的每个column和value
             List<Column> after = row.getColumns();
             Map<String,String> afterMap = getMap(after,databaseName,tableName);
             if(afterMap!=null && afterMap.size()>0){

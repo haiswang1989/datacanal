@@ -46,6 +46,7 @@ public class DeleteRowsEventHandlerV2 extends AbstractEventHandler {
         
         List<Row> rows = deleteRowsEvent.getRows();
         for (Row row : rows) {
+            //delete之前row的值
             List<Column> before = row.getColumns();
             Map<String,String> beforeMap = getMap(before,databaseName,tableName);
             

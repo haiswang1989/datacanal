@@ -39,18 +39,24 @@ public abstract class AbstractEventHandler implements IEventHandler {
         }
 
         String fullName = databaseName+"."+tableName;
+        //该表对应的column信息
         List<ColumnInfo> columnInfoList = TableInfoKeeper.getColumns(fullName);
         if(columnInfoList == null)
             return null;
+        
         if(columnInfoList.size() != cols.size()){
+            //如果之前存储的column信息和当前的记录不对应(表结构发生了变化)
+            //刷新表结构信息
             TableInfoKeeper.refreshColumnsMap();
+            //如果刷新完了,还是对不上,直接丢该该条记录
             if(columnInfoList.size() != cols.size())
             {
                 LOG.error("columnInfoList.size is not equal to cols.");
                 return null;
             }
         }
-
+        
+        //按顺序遍历字段的名称和字段的值
         for(int i=0;i<columnInfoList.size(); i++){
             if(cols.get(i).getValue()==null)
                 map.put(columnInfoList.get(i).getName(),"");

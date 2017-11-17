@@ -47,7 +47,9 @@ public class UpdateRowsEventHandlerV2 extends AbstractEventHandler {
         
         List<Pair<Row>> rows = updateRowsEvent.getRows();
         for (Pair<Row> pair : rows) {
+            //update以前的数据
             List<Column> colsBefore = pair.getBefore().getColumns();
+            //update以后的数据
             List<Column> colsAfter = pair.getAfter().getColumns();
             
             Map<String,String> beforeMap = getMap(colsBefore,databaseName,tableName);
