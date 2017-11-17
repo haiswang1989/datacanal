@@ -20,6 +20,7 @@ import com.canal.center.selecter.impl.RandomChannelSelector;
 import com.canal.center.selecter.intf.IChannelSelector;
 import com.canal.center.thread.CheckHeartbeatThread;
 import com.canal.center.thread.HandleCommandThread;
+import com.canal.center.thread.TaskCheckThread;
 import com.canal.serializer.impl.JSONSerializer;
 import com.canal.serializer.intf.ISerializer;
 import com.datacanal.common.constant.Consts;
@@ -100,6 +101,8 @@ public class CanalCenterLauncher {
         
         //心跳检测
         Executors.newScheduledThreadPool(1).scheduleAtFixedRate(new CheckHeartbeatThread(launcher.maxHeartbeat, launcher.zkClient), 0l, launcher.checkHearbeatPeriod, TimeUnit.SECONDS);
+        //"未处理的分片"的检查线程
+        Executors.newScheduledThreadPool(1).scheduleAtFixedRate(new TaskCheckThread(launcher.zkClient), 60l, 60l, TimeUnit.SECONDS);
         
         //instance启动命令处理
         HandleCommandThread handleCommand = new HandleCommandThread(launcher.selector, launcher.serializer);

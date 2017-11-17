@@ -2,6 +2,7 @@ package com.canal.instance.code;
 
 import java.net.UnknownHostException;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.I0Itec.zkclient.ZkClient;
@@ -181,6 +182,14 @@ public class CDCEngine {
     private void registToZookeeper(String path) throws UnknownHostException {
         StringBuilder pathBuilder = new StringBuilder();
         pathBuilder.append(path).append(Consts.ZK_PATH_SEPARATOR).append(Consts.DATACANAL_TASK_INSTANCE);
+        //该分片正在运行的instance,一个分片无需多个intance抽取
+        //多个instance抽取,数据就会重复
+        List<String> runningInstances = zkClient.getChildren(pathBuilder.toString());
+        if(0!=runningInstances.size()) {
+            LOG.warn("Instance is running, no need start duplicated. running node {}, JVM will exit.", runningInstances.get(0));
+            System.exit(0);
+        }
+        
         ZkUtil.createChildPath(zkClient, pathBuilder.toString(), String.valueOf(nodeId), Status.RUNNING, CreateMode.EPHEMERAL);
         //捕获该instance的status的变化
         //center可能更新该值,让instance停止

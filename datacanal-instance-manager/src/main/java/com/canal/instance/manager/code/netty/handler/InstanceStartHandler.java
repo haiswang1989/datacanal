@@ -72,6 +72,15 @@ public class InstanceStartHandler extends ChannelHandlerAdapter {
             String cmd = buildCmd(dbInfo);
             LOG.info("Cmd : {}", cmd);
             CommonUtils.doExecCmd(cmd);
+            //这边需要sleep一段时间,可能一开始刚启动的时候有PID,等会儿就没了
+            //但是sleep又会导致整个通信周期太长
+            /*
+            try {
+                TimeUnit.SECONDS.sleep(10);
+            } catch (InterruptedException e) {
+            }
+            */
+            
             return checkIsOnline(dbInfo);
         } 
         
