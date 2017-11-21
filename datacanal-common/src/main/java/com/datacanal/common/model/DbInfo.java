@@ -1,7 +1,9 @@
 package com.datacanal.common.model;
 
+import java.util.List;
 import java.util.Set;
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -16,11 +18,23 @@ import lombok.Setter;
 @AllArgsConstructor
 public class DbInfo {
     
-    private String host; 
+    
+    
+    //主节点
+    private DbNode master;
+    //所有的从节点
+    private List<DbNode> slaves;
+    //抽取的表
+    private Set<String> sensitiveTables;
+    //任务路径
+    private String zkPath;
+}
+
+@Data
+class DbNode {
+    private String host;
     private int port;
     private String username;
     private String password;
     private String dbName;
-    private Set<String> sensitiveTables;
-    private String zkPath;
-}
+} 

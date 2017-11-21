@@ -15,18 +15,16 @@ public class ClientChannelInitializer extends ChannelInitializer<SocketChannel> 
     
     private String startInstanceShell;
     private ZkClient zkClient;
-    private String pidPath;
     
-    public ClientChannelInitializer(String startInstanceShellArg, ZkClient zkClientArg, String pidPathArg) {
+    public ClientChannelInitializer(String startInstanceShellArg, ZkClient zkClientArg) {
         this.startInstanceShell = startInstanceShellArg;
         this.zkClient = zkClientArg;
-        this.pidPath = pidPathArg;
     }
     
     protected void initChannel(SocketChannel socketChannel) throws Exception {
         //解码器
         socketChannel.pipeline().addLast(new HeadWithBodyDecodeHandler());
         //instance启动command的处理类
-        socketChannel.pipeline().addLast(new InstanceStartHandler(this.startInstanceShell,this.zkClient,this.pidPath));
+        socketChannel.pipeline().addLast(new InstanceStartHandler(this.startInstanceShell,this.zkClient));
     }
 }

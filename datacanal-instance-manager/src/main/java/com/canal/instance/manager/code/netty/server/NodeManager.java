@@ -39,8 +39,8 @@ public class NodeManager {
             .option(ChannelOption.TCP_NODELAY, true);
     }
     
-    public ChannelFuture connect(String ip, int port, String startInstanceShell, ZkClient zkClient, String pidPath) throws InterruptedException {
-        bootstap.handler(new ClientChannelInitializer(startInstanceShell, zkClient, pidPath));
+    public ChannelFuture connect(String ip, int port, String startInstanceShell, ZkClient zkClient) throws InterruptedException {
+        bootstap.handler(new ClientChannelInitializer(startInstanceShell, zkClient));
         return bootstap.connect(ip, port).sync();
     }
     

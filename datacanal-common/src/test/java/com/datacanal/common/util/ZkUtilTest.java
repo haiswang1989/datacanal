@@ -29,7 +29,8 @@ public class ZkUtilTest {
     public void testCreatePath() {
         Set<String> sensitiveTables = new HashSet<>();
         sensitiveTables.add("person");
-        DbInfo dbInfo = new DbInfo("192.168.56.102", 3306, "root", "123456", "test", sensitiveTables, "/datacanal/task/person/person-1");
+        DbInfo dbInfo = null;//new DbInfo("192.168.56.102", 3306, "root", "123456", "test", sensitiveTables, "/datacanal/task/person/person-1");
+        //TODO
         String path = "/datacanal/task/person/person-1";
         zkClient.create(path, JSON.toJSONString(dbInfo), CreateMode.PERSISTENT);
     }
