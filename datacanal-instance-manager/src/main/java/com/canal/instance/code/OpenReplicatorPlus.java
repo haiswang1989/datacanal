@@ -21,6 +21,9 @@ import com.google.code.or.binlog.BinlogParserListener;
 import lombok.Setter;
 
 /**
+ * OpenReplicator的加强版
+ * 1:可以从mysql的重启中恢复
+ * 2:当slave挂掉以后,可以切换到其他slave上面
  * 
  * <p>Description:</p>
  * @author hansen.wang
@@ -125,6 +128,7 @@ public class OpenReplicatorPlus extends OpenReplicator {
                 }
             } else { //等待了指定的时间,连接没有恢复确定宕机
                 LOG.info("Try to start on other slave.");
+                
             }
         }
     }
@@ -175,7 +179,7 @@ class TryConnect implements Callable<Boolean> {
                 return true;
             } else {
                 try {
-                    TimeUnit.SECONDS.sleep(3);
+                    TimeUnit.SECONDS.sleep(3L);
                 } catch(Exception e) {
                 }
             }
