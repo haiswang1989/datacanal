@@ -62,6 +62,9 @@ public class CDCEngine {
     @Value("${node.id}")
     private int nodeId;
     
+    @Value("${mysql.tryconnect.timeout}")
+    private long tryConnectTimeout;
+    
     private OpenReplicator openReplicator;
     private ZkClient zkClient;
     
@@ -158,7 +161,7 @@ public class CDCEngine {
      * 
      */
     private void initOpenReplicator() {
-        openReplicator = new OpenReplicator();
+        openReplicator = new OpenReplicatorPlus(dbHost, dbPort, dbName, username, password, tryConnectTimeout);
         openReplicator.setUser(username);
         openReplicator.setPassword(password);
         openReplicator.setHost(dbHost);
