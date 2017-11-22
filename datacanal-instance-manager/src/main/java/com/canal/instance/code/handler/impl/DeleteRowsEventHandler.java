@@ -5,6 +5,8 @@ import java.util.Map;
 
 import javax.annotation.Resource;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import com.canal.instance.code.handler.keeper.TableInfoKeeper;
@@ -28,6 +30,8 @@ import com.google.code.or.common.glossary.Row;
 @Component
 public class DeleteRowsEventHandler extends AbstractEventHandler {
     
+    public static final Logger LOG = LoggerFactory.getLogger(DeleteRowsEventHandler.class);
+    
     @Resource(name="jsonSerializer")
     private ISerializer<CDCEvent> serializer;
     
@@ -43,6 +47,11 @@ public class DeleteRowsEventHandler extends AbstractEventHandler {
         
         String databaseName = tableInfo.getDatabaseName();
         String tableName = tableInfo.getTableName();
+        
+        if(!isNeedHandle(tableName)) {
+            LOG.debug("No need handle table record ,{}", tableName);
+            return;
+        }
         
         List<Row> rows = deleteRowsEvent.getRows();
         for (Row row : rows) {

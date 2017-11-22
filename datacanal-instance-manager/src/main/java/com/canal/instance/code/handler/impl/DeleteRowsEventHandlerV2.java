@@ -44,6 +44,11 @@ public class DeleteRowsEventHandlerV2 extends AbstractEventHandler {
         String databaseName = tableInfo.getDatabaseName();
         String tableName = tableInfo.getTableName();
         
+        if(!isNeedHandle(tableName)) {
+            LOG.debug("No need handle table record ,{}", tableName);
+            return;
+        }
+        
         List<Row> rows = deleteRowsEvent.getRows();
         for (Row row : rows) {
             //delete之前row的值

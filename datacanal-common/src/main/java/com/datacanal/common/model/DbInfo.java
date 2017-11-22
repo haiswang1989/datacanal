@@ -3,7 +3,6 @@ package com.datacanal.common.model;
 import java.util.List;
 import java.util.Set;
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -17,9 +16,6 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 public class DbInfo {
-    
-    
-    
     //主节点
     private DbNode master;
     //所有的从节点
@@ -28,13 +24,7 @@ public class DbInfo {
     private Set<String> sensitiveTables;
     //任务路径
     private String zkPath;
+    //true:从master抽取
+    //false:从slave抽取
+    private boolean useMaster;
 }
-
-@Data
-class DbNode {
-    private String host;
-    private int port;
-    private String username;
-    private String password;
-    private String dbName;
-} 

@@ -45,6 +45,11 @@ public class UpdateRowsEventHandlerV2 extends AbstractEventHandler {
         String databaseName = tableInfo.getDatabaseName();
         String tableName = tableInfo.getTableName();
         
+        if(!isNeedHandle(tableName)) {
+            LOG.debug("No need handle table record ,{}", tableName);
+            return;
+        }
+        
         List<Pair<Row>> rows = updateRowsEvent.getRows();
         for (Pair<Row> pair : rows) {
             //update以前的数据

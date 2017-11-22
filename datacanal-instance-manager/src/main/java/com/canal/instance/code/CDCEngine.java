@@ -1,16 +1,8 @@
 package com.canal.instance.code;
 
 import java.net.UnknownHostException;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-
 import org.I0Itec.zkclient.ZkClient;
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
-import org.apache.commons.cli.PosixParser;
 import org.apache.zookeeper.CreateMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,15 +15,17 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.druid.pool.DruidDataSource;
-import com.canal.instance.code.exception.ParamException;
+import com.alibaba.fastjson.JSON;
 import com.canal.instance.code.handler.keeper.PositionKeeper;
-import com.canal.instance.code.handler.keeper.SensitiveTablesKeeper;
+import com.canal.instance.code.handler.keeper.DbInfoKeeper;
 import com.canal.instance.code.handler.keeper.TableInfoKeeper;
 import com.canal.instance.code.listener.CDCInstanceListener;
 import com.canal.instance.code.mysql.DbMetadata;
 import com.canal.instance.code.zklistener.StatusListener;
 import com.datacanal.common.constant.Consts;
 import com.datacanal.common.model.BinlogMasterStatus;
+import com.datacanal.common.model.DbInfo;
+import com.datacanal.common.model.DbNode;
 import com.datacanal.common.model.Status;
 import com.datacanal.common.util.ZkUtil;
 import com.google.code.or.OpenReplicator;
@@ -71,34 +65,11 @@ public class CDCEngine {
     //binlog的name
     private String binlogFileName;
     
-    //DB的host
-    private String dbHost;
-    //DB的端口
-    private int dbPort;
-    //DB的用户名
-    private String username;
-    //DB的密码
-    private String password;
-    //DB的名称
-    private String dbName;
-    //抽取表的名称,多个以逗号隔开
-    private String sensitiveTables;
-    //该分片
-    private String zkPath;
-    
+    //任务的zk目录
+    private String taskNodePath;
     
     /**
-     * java CDCEngine -h 192.168.56.101 -p 3306 -u root -pw 123456 -n test -st person -sp 5 -zp /datacanal/task/person/person-1
-     * 
-     * -h   DB的host(必须)
-     * -p   DB的port(必须)
-     * -u   DB的username(必须)
-     * -pw  DB的password(必须)
-     * -n   DB的名称(必须)
-     * -st  需要抽取DB表的名称
-     * -sp  SYNC Position到ZK的时间间隔
-     * -zp  分片在ZK上的路径
-     * 
+     * java CDCEngine ${taskNodePath} 
      * @param args
      */
     public static void main(String[] args) {
@@ -106,10 +77,14 @@ public class CDCEngine {
         @SuppressWarnings("resource")
         ApplicationContext context = new AnnotationConfigApplicationContext(CDCEngine.class);
         CDCEngine engine = context.getBean(CDCEngine.class);
+        if(null==args || 0==args.length) {
+            LOG.error("Must input task node path.");
+            return;
+        }
         
+        engine.taskNodePath = args[0];
         try {
-            engine.parseArgs(args);
-            engine.setup();
+            engine.setup(engine.taskNodePath);
             engine.start();
         } catch (Exception e) {
             LOG.error(e.getMessage(), e);
@@ -129,30 +104,41 @@ public class CDCEngine {
      * 
      * @throws UnknownHostException
      */
-    private void setup() throws UnknownHostException {
+    private void setup(String taskNodePath) throws UnknownHostException {
         zkClient = new ZkClient(zkString);
-        //将自己注册到zookeeper上面
-        registToZookeeper(zkPath);
+        String jsonString = zkClient.readData(taskNodePath);
+        DbInfo dbInfo = JSON.parseObject(jsonString, DbInfo.class);
+        DbNode useDbNode = null;
+        boolean isUseMaster = dbInfo.isUseMaster();
+        if(isUseMaster) {
+            //用Master进行抽取
+            useDbNode = dbInfo.getMaster();
+        } else {
+            //用Slave进行抽取
+            useDbNode = dbInfo.getSlaves().get(0);
+        }
         
-        initJdbc();
-        initOpenReplicator();
+        initJdbc(useDbNode);
+        initOpenReplicator(useDbNode);
         
         TableInfoKeeper.init(binlogFileName);
-        //设置敏感表
-        SensitiveTablesKeeper.setSensitiveTables(parseSensitiveTables(sensitiveTables));
+        //设置task的db信息
+        DbInfoKeeper.init(dbInfo);
         //position
         PositionKeeper.setPositionSyncZkPeriod(positionSyncZkPeriod);
         PositionKeeper.setZkClient(zkClient);
-        PositionKeeper.init(zkPath);
+        PositionKeeper.init(taskNodePath);
         
+        //将自己注册到zookeeper上面
+        registToZookeeper(taskNodePath);
     }
     
     /**
      * 初始化JDBC
      */
-    private void initJdbc() {
+    private void initJdbc(DbNode useDbNode) {
         //监听目标数据库的datasource
-        DruidDataSource datasource = createDruidDatasource(dbHost, dbPort, username, password, dbName);
+        DruidDataSource datasource = createDruidDatasource(useDbNode.getHost(), useDbNode.getPort(), useDbNode.getUsername(), useDbNode.getPassword(), useDbNode.getDbName());
         JdbcTemplate jdbcTemplate = new JdbcTemplate(datasource);
         DbMetadata.setJdbcTemplate(jdbcTemplate);
     }
@@ -160,12 +146,12 @@ public class CDCEngine {
     /**
      * 
      */
-    private void initOpenReplicator() {
-        openReplicator = new OpenReplicatorPlus(dbHost, dbPort, dbName, username, password, tryConnectTimeout);
-        openReplicator.setUser(username);
-        openReplicator.setPassword(password);
-        openReplicator.setHost(dbHost);
-        openReplicator.setPort(dbPort);
+    private void initOpenReplicator(DbNode useDbNode) {
+        openReplicator = new OpenReplicatorPlus(useDbNode.getHost(), useDbNode.getPort(), useDbNode.getDbName(), useDbNode.getUsername(), useDbNode.getPassword(), tryConnectTimeout);
+        openReplicator.setUser(useDbNode.getUsername());
+        openReplicator.setPassword(useDbNode.getPassword());
+        openReplicator.setHost(useDbNode.getHost());
+        openReplicator.setPort(useDbNode.getPort());
         
         //获取master生成的binlog的信息
         BinlogMasterStatus binlogMasterStatus = DbMetadata.getBinlongMasterStatus();
@@ -226,87 +212,5 @@ public class CDCEngine {
         druidDatasource.setMinEvictableIdleTimeMillis(300000l);
         druidDatasource.setTimeBetweenEvictionRunsMillis(60000l);
         return druidDatasource;
-    }
-    
-    /**
-     * 解析敏感表
-     * @param sensitiveTables
-     * @return
-     */
-    private Set<String> parseSensitiveTables(String sensitiveTables) {
-        Set<String> retSensitiveTables = new HashSet<>();
-        for (String sensitiveTable : sensitiveTables.split(",")) {
-            retSensitiveTables.add(sensitiveTable);
-        }
-        
-        return retSensitiveTables;
-    }
-    
-    /**
-     * 解析main函数的参数
-     * @param args
-     * @throws ParseException
-     * @throws ParamException
-     */
-    private void parseArgs(String[] args) throws ParseException, ParamException {
-        final CommandLineParser parser = new PosixParser();
-        final Options options = new Options();
-        
-        options.addOption("h", true, "DB的host(必须)");
-        options.addOption("p", true, "DB的port(必须)");
-        options.addOption("u", true, "DB的username(必须)");
-        options.addOption("pw", true, "DB的password(必须)");
-        options.addOption("n", true, "DB的名称(必须)");
-        options.addOption("st", true, "需要抽取DB表的名称");
-        options.addOption("sp", true, "SYNC Position到ZK的时间间隔");
-        options.addOption("zp", true, "分片在zk的路径");
-        
-        CommandLine cmdLine = parser.parse(options, args);
-        
-        if(cmdLine.hasOption("h")) { //host
-            dbHost = cmdLine.getOptionValue("h");
-        } else {
-            throw new ParamException("Db host must provide.");
-        }
-        
-        if(cmdLine.hasOption("p")) { //port
-            try {
-                dbPort = Integer.parseInt(cmdLine.getOptionValue("p"));
-            } catch(NumberFormatException e) {
-                throw new ParamException("Db port must right to provide.", e);
-            }
-        } else {
-            throw new ParamException("Db port must provide.");
-        }
-        
-        if(cmdLine.hasOption("u")) { //username
-            username = cmdLine.getOptionValue("u");
-        } else {
-            throw new ParamException("Db username must provide.");
-        }
-        
-        if(cmdLine.hasOption("pw")) { //password
-            password = cmdLine.getOptionValue("pw");
-        } else {
-            throw new ParamException("Db password must provide.");
-        }
-        
-        if(cmdLine.hasOption("n")) { //Db的名称
-            dbName = cmdLine.getOptionValue("n");
-        } else {
-            throw new ParamException("Db name must provide.");
-        }
-         
-        if(cmdLine.hasOption("st")) { //敏感表
-            sensitiveTables = cmdLine.getOptionValue("st");
-        } else {
-            throw new ParamException("Db sensitive tables must provide.");
-        }
-        
-        if(cmdLine.hasOption("zp")) { //task对于的zk的路径
-            zkPath = cmdLine.getOptionValue("zp");
-        } else {
-            throw new ParamException("Db zk Path must provide.");
-        }
     }
 }

@@ -10,6 +10,7 @@ import org.testng.annotations.Test;
 
 import com.alibaba.fastjson.JSON;
 import com.datacanal.common.model.DbInfo;
+import com.datacanal.common.model.DbNode;
 import com.datacanal.common.model.Status;
 
 public class ZkUtilTest {
@@ -29,10 +30,13 @@ public class ZkUtilTest {
     public void testCreatePath() {
         Set<String> sensitiveTables = new HashSet<>();
         sensitiveTables.add("person");
-        DbInfo dbInfo = null;//new DbInfo("192.168.56.102", 3306, "root", "123456", "test", sensitiveTables, "/datacanal/task/person/person-1");
-        //TODO
+        DbNode dbNode = new DbNode("192.168.56.101", 3306, "root", "123456", "test");
+        DbInfo dbInfo = new DbInfo(dbNode, null, sensitiveTables, "/datacanal/task/person/person-1", true);
         String path = "/datacanal/task/person/person-1";
         zkClient.create(path, JSON.toJSONString(dbInfo), CreateMode.PERSISTENT);
+        
+        zkClient.create(path + "/instance", "", CreateMode.PERSISTENT);
+        zkClient.create(path + "/position", 0L, CreateMode.PERSISTENT);
     }
     
     @Test
