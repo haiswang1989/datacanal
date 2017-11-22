@@ -148,9 +148,8 @@ public class OpenReplicatorPlus extends OpenReplicator {
                 LOG.info("Try to start on other slave.");
                 List<DbNode> slaves = CommonKeeper.getSlaves();
                 DbNode currNode = CommonKeeper.getCurrentSlave();
-                
                 CDCEngine engine = CommonKeeper.getEngine();
-                
+                boolean isStart = false;
                 for (DbNode dbNode : slaves) {
                     if(currNode.equals(dbNode)) {
                         continue;
@@ -159,13 +158,23 @@ public class OpenReplicatorPlus extends OpenReplicator {
                     try {
                         engine.changableInit(dbNode);
                     } catch(Exception e) {
+                        LOG.error(e.getMessage(), e);
                         continue;
                     }
                     
                     try {
                         engine.start();
+                        isStart = true;
+                        LOG.info("Dump restart success, on [{}]", dbNode.toString());
                     } catch (Exception e) {
+                        LOG.error(e.getMessage(), e);
                     }
+                }
+                
+                //如果没有找到合适的DB进行抽取,那么直接退出JVM
+                if(!isStart) {
+                    LOG.error("No useful db, JVM will exit.");
+                    System.exit(-1);
                 }
             }
         }
