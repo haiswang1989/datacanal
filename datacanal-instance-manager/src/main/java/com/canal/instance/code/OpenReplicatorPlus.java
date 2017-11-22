@@ -3,6 +3,7 @@ package com.canal.instance.code;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -14,6 +15,8 @@ import java.util.concurrent.TimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.canal.instance.code.handler.keeper.CommonKeeper;
+import com.datacanal.common.model.DbNode;
 import com.google.code.or.OpenReplicator;
 import com.google.code.or.binlog.BinlogParser;
 import com.google.code.or.binlog.BinlogParserListener;
@@ -99,10 +102,22 @@ public class OpenReplicatorPlus extends OpenReplicator {
             Future<Boolean> future = es.submit(tryConnect);
             canConnect = false;
             try {
-                canConnect = future.get(trySecond, TimeUnit.SECONDS);
+                if(CommonKeeper.isExtractMaster()) {
+                    //如果是抽取的master,那么就一直尝试,直到master可以连接
+                    //在Mysql的HA的配置中,如果Master挂掉了,会用一个Slave来顶替Master
+                    //使用的方式是在Slave中添加一个IP地址,该IP地址就是原Master的IP地址
+                    canConnect = future.get();
+                } else {
+                    //如果抽取的是slave,那么就尝试指定的时间,如果到了指定的时间还是没有成功
+                    //那么就直接认为该slave宕机,漂移到其他slave上面执行
+                    canConnect = future.get(trySecond, TimeUnit.SECONDS);
+                }
             } catch (InterruptedException e) {
+                LOG.error(e.getMessage(), e);
             } catch (ExecutionException e) {
+                LOG.error(e.getMessage(), e);
             } catch (TimeoutException e) {
+                LOG.error(e.getMessage(), e);
             } finally {
                 //关闭尝试连接线程
                 tryConnect.setNeedTry(false);
@@ -110,6 +125,7 @@ public class OpenReplicatorPlus extends OpenReplicator {
                     TimeUnit.SECONDS.sleep(4L);
                 } catch (InterruptedException e) {
                 }
+                //关闭线程池
                 es.shutdownNow();
             }
         }
@@ -118,7 +134,8 @@ public class OpenReplicatorPlus extends OpenReplicator {
         public void onStop(BinlogParser parser) {
             LOG.warn("onStop, canConnect : {}", canConnect);
             stopQuietly(0, TimeUnit.MILLISECONDS);
-            if(canConnect) { //连接已经恢复,重新启动
+            if(canConnect) { 
+                //连接已经恢复,重新启动(不管是master或者是slave)
                 LOG.info("Try to restart.");
                 try {
                     openReplicatorPlus.start();
@@ -126,9 +143,30 @@ public class OpenReplicatorPlus extends OpenReplicator {
                     LOG.error("Restart failed", e);
                     System.exit(-1);
                 }
-            } else { //等待了指定的时间,连接没有恢复确定宕机
+            } else { 
+                //等待了指定的时间,连接没有恢复,确定宕机,尝试在其他的slave上面启动
                 LOG.info("Try to start on other slave.");
+                List<DbNode> slaves = CommonKeeper.getSlaves();
+                DbNode currNode = CommonKeeper.getCurrentSlave();
                 
+                CDCEngine engine = CommonKeeper.getEngine();
+                
+                for (DbNode dbNode : slaves) {
+                    if(currNode.equals(dbNode)) {
+                        continue;
+                    }
+                    
+                    try {
+                        engine.changableInit(dbNode);
+                    } catch(Exception e) {
+                        continue;
+                    }
+                    
+                    try {
+                        engine.start();
+                    } catch (Exception e) {
+                    }
+                }
             }
         }
     }

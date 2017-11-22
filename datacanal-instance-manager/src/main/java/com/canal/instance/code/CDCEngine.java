@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service;
 import com.alibaba.druid.pool.DruidDataSource;
 import com.alibaba.fastjson.JSON;
 import com.canal.instance.code.handler.keeper.PositionKeeper;
-import com.canal.instance.code.handler.keeper.DbInfoKeeper;
+import com.canal.instance.code.handler.keeper.CommonKeeper;
 import com.canal.instance.code.handler.keeper.TableInfoKeeper;
 import com.canal.instance.code.listener.CDCInstanceListener;
 import com.canal.instance.code.mysql.DbMetadata;
@@ -84,7 +84,7 @@ public class CDCEngine {
         
         engine.taskNodePath = args[0];
         try {
-            engine.setup(engine.taskNodePath);
+            engine.setup(engine.taskNodePath, engine);
             engine.start();
         } catch (Exception e) {
             LOG.error(e.getMessage(), e);
@@ -96,18 +96,15 @@ public class CDCEngine {
      * 
      * @throws Exception
      */
-    private void start() throws Exception {
+    public void start() throws Exception {
         openReplicator.start();
     }
     
     /**
-     * 
-     * @throws UnknownHostException
+     * 获取需要抽取的DbNode
+     * @return
      */
-    private void setup(String taskNodePath) throws UnknownHostException {
-        zkClient = new ZkClient(zkString);
-        String jsonString = zkClient.readData(taskNodePath);
-        DbInfo dbInfo = JSON.parseObject(jsonString, DbInfo.class);
+    private DbNode getUseDbNode(DbInfo dbInfo) {
         DbNode useDbNode = null;
         boolean isUseMaster = dbInfo.isUseMaster();
         if(isUseMaster) {
@@ -116,25 +113,62 @@ public class CDCEngine {
         } else {
             //用Slave进行抽取
             useDbNode = dbInfo.getSlaves().get(0);
+            //设置当前使用的slave
+            CommonKeeper.setCurrentSlave(useDbNode);
         }
         
-        initJdbc(useDbNode);
-        initOpenReplicator(useDbNode);
+        return useDbNode;
+    }
+    
+    /**
+     * 
+     * @throws UnknownHostException
+     */
+    public void setup(String taskNodePath, CDCEngine engine) {
+        zkClient = new ZkClient(zkString);
+        String jsonString = zkClient.readData(taskNodePath);
+        DbInfo dbInfo = JSON.parseObject(jsonString, DbInfo.class);
+        DbNode useDbNode = getUseDbNode(dbInfo);
         
-        TableInfoKeeper.init(binlogFileName);
-        //设置task的db信息
-        DbInfoKeeper.init(dbInfo);
-        //position
-        PositionKeeper.setPositionSyncZkPeriod(positionSyncZkPeriod);
-        PositionKeeper.setZkClient(zkClient);
-        PositionKeeper.init(taskNodePath);
+        immutableInit(dbInfo);
+        changableInit(useDbNode);
+        
+        //
+        CommonKeeper.setEngine(engine);
         
         //将自己注册到zookeeper上面
         registToZookeeper(taskNodePath);
     }
     
     /**
+     * 出现slave切换,不需要变化的部分的信息的设置
+     * @param dbInfo
+     */
+    public void immutableInit(DbInfo dbInfo) {
+        //设置task的db信息
+        CommonKeeper.init(dbInfo);
+        //position
+        PositionKeeper.setPositionSyncZkPeriod(positionSyncZkPeriod);
+        PositionKeeper.setZkClient(zkClient);
+        PositionKeeper.init(taskNodePath);
+    }
+    
+    /**
+     * 如果出现slave切换,需要变化的部分信息的设置
+     * @param useDbNode
+     */
+    public void changableInit(DbNode useDbNode) {
+        //初始化DB的信息
+        initJdbc(useDbNode);
+        //初始化dump binlog对象
+        initOpenReplicator(useDbNode);
+        //设置抽取的binlog
+        TableInfoKeeper.init(binlogFileName);
+    }
+    
+    /**
      * 初始化JDBC
+     * @param useDbNode
      */
     private void initJdbc(DbNode useDbNode) {
         //监听目标数据库的datasource
@@ -145,9 +179,11 @@ public class CDCEngine {
     
     /**
      * 
+     * @param useDbNode
      */
     private void initOpenReplicator(DbNode useDbNode) {
-        openReplicator = new OpenReplicatorPlus(useDbNode.getHost(), useDbNode.getPort(), useDbNode.getDbName(), useDbNode.getUsername(), useDbNode.getPassword(), tryConnectTimeout);
+        openReplicator = new OpenReplicatorPlus(useDbNode.getHost(), useDbNode.getPort(), useDbNode.getDbName(), 
+                useDbNode.getUsername(), useDbNode.getPassword(), tryConnectTimeout);
         openReplicator.setUser(useDbNode.getUsername());
         openReplicator.setPassword(useDbNode.getPassword());
         openReplicator.setHost(useDbNode.getHost());
@@ -172,7 +208,7 @@ public class CDCEngine {
      * @param child
      * @throws UnknownHostException 
      */
-    private void registToZookeeper(String path) throws UnknownHostException {
+    private void registToZookeeper(String path) {
         StringBuilder pathBuilder = new StringBuilder();
         pathBuilder.append(path).append(Consts.ZK_PATH_SEPARATOR).append(Consts.DATACANAL_TASK_INSTANCE);
         //该分片正在运行的instance,一个分片无需多个intance抽取

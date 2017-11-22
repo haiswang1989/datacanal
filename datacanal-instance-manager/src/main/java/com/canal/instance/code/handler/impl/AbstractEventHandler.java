@@ -8,7 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.canal.instance.code.handler.intf.IEventHandler;
-import com.canal.instance.code.handler.keeper.DbInfoKeeper;
+import com.canal.instance.code.handler.keeper.CommonKeeper;
 import com.canal.instance.code.handler.keeper.TableInfoKeeper;
 import com.datacanal.common.model.ColumnInfo;
 import com.google.code.or.common.glossary.Column;
@@ -73,7 +73,7 @@ public abstract class AbstractEventHandler implements IEventHandler {
      * @return
      */
     protected boolean isNeedHandle(String tableName) {
-        return DbInfoKeeper.isSensitiveTable(tableName);
+        return CommonKeeper.isSensitiveTable(tableName);
     }
     
 }
