@@ -145,7 +145,7 @@ public class OpenReplicatorPlus extends OpenReplicator {
                 }
             } else { 
                 //等待了指定的时间,连接没有恢复,确定宕机,尝试在其他的slave上面启动
-                LOG.info("Try to start on other slave.");
+                LOG.info("Try restart on other slave.");
                 List<DbNode> slaves = CommonKeeper.getSlaves();
                 DbNode currNode = CommonKeeper.getCurrentSlave();
                 CDCEngine engine = CommonKeeper.getEngine();
@@ -154,6 +154,8 @@ public class OpenReplicatorPlus extends OpenReplicator {
                     if(currNode.equals(dbNode)) {
                         continue;
                     }
+                    
+                    LOG.info("Try restart on [{}]", dbNode.toString());
                     
                     try {
                         engine.changableInit(dbNode);
@@ -164,6 +166,8 @@ public class OpenReplicatorPlus extends OpenReplicator {
                     
                     try {
                         engine.start();
+                        //重置当前的slave
+                        CommonKeeper.setCurrentSlave(dbNode);
                         isStart = true;
                         LOG.info("Dump restart success, on [{}]", dbNode.toString());
                     } catch (Exception e) {
