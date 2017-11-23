@@ -131,7 +131,7 @@ public class CDCEngine {
         DbNode useDbNode = getUseDbNode(dbInfo);
         
         immutableInit(dbInfo);
-        changableInit(useDbNode);
+        changableInit(useDbNode, false);
         
         //
         CommonKeeper.setEngine(engine);
@@ -156,12 +156,13 @@ public class CDCEngine {
     /**
      * 如果出现slave切换,需要变化的部分信息的设置
      * @param useDbNode
+     * @param reflashPosition
      */
-    public void changableInit(DbNode useDbNode) {
+    public void changableInit(DbNode useDbNode, boolean reflashPosition) {
         //初始化DB的信息
         initJdbc(useDbNode);
         //初始化dump binlog对象
-        initOpenReplicator(useDbNode);
+        initOpenReplicator(useDbNode, reflashPosition);
         //设置抽取的binlog
         TableInfoKeeper.init(binlogFileName);
     }
@@ -180,8 +181,9 @@ public class CDCEngine {
     /**
      * 
      * @param useDbNode
+     * @param reflashPosition 是否从数据库那最新的binlog的position信息 true:数据库拿 false:zk获取
      */
-    private void initOpenReplicator(DbNode useDbNode) {
+    private void initOpenReplicator(DbNode useDbNode, boolean reflashPosition) {
         openReplicator = new OpenReplicatorPlus(useDbNode.getHost(), useDbNode.getPort(), useDbNode.getDbName(), 
                 useDbNode.getUsername(), useDbNode.getPassword(), tryConnectTimeout);
         openReplicator.setUser(useDbNode.getUsername());
@@ -192,7 +194,8 @@ public class CDCEngine {
         //获取master生成的binlog的信息
         BinlogMasterStatus binlogMasterStatus = DbMetadata.getBinlongMasterStatus();
         openReplicator.setBinlogFileName(binlogMasterStatus.getBinlogName());
-        if(PositionKeeper.getPosition() == 0l) { //如果postion是一个初始化的状态,那么直接用从数据库中获取到的position
+        if(PositionKeeper.getPosition() == 0l || reflashPosition) { 
+            //如果postion是一个初始化的状态,那么直接用从数据库中获取到的position
             openReplicator.setBinlogPosition(binlogMasterStatus.getPosition());
         } else { //否则使用zookeeper上的position
             openReplicator.setBinlogPosition(PositionKeeper.getPosition());

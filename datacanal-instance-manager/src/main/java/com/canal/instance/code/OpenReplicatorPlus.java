@@ -158,7 +158,7 @@ public class OpenReplicatorPlus extends OpenReplicator {
                     LOG.info("Try restart on [{}]", dbNode.toString());
                     
                     try {
-                        engine.changableInit(dbNode);
+                        engine.changableInit(dbNode, true);
                     } catch(Exception e) {
                         LOG.error(e.getMessage(), e);
                         continue;

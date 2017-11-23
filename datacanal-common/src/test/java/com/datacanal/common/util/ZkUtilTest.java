@@ -1,6 +1,8 @@
 package com.datacanal.common.util;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.I0Itec.zkclient.ZkClient;
@@ -30,8 +32,17 @@ public class ZkUtilTest {
     public void testCreatePath() {
         Set<String> sensitiveTables = new HashSet<>();
         sensitiveTables.add("person");
-        DbNode dbNode = new DbNode("192.168.56.101", 3306, "root", "123456", "test");
-        DbInfo dbInfo = new DbInfo(dbNode, null, sensitiveTables, "/datacanal/task/person/person-1", true);
+        DbNode master = new DbNode("192.168.56.101", 3306, "root", "123456", "test");
+        
+        DbNode slave1 = new DbNode("192.168.56.102", 3306, "root", "123456", "test");
+        DbNode slave2 = new DbNode("192.168.56.103", 3306, "root", "123456", "test");
+        List<DbNode> slaves = new ArrayList<>();
+        slaves.add(slave1);
+        slaves.add(slave2);
+        
+        DbInfo dbInfo = new DbInfo(master, slaves, sensitiveTables, "/datacanal/task/person/person-1", false);
+        
+        
         String path = "/datacanal/task/person/person-1";
         zkClient.create(path, JSON.toJSONString(dbInfo), CreateMode.PERSISTENT);
         
@@ -56,7 +67,7 @@ public class ZkUtilTest {
     
     @Test
     public void testModifyData() {
-        zkClient.writeData("/datacanal/task/person/person-1/instance/10000", Status.STOP);
+        zkClient.writeData("/datacanal/task/person/person-1/position", 0L);
         System.out.println("Over...");
     }
 }
