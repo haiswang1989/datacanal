@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 
 import com.canal.instance.code.handler.EventHandler;
 import com.canal.instance.code.handler.keeper.PositionKeeper;
+import com.canal.instance.code.handler.keeper.TableInfoKeeper;
 import com.datacanal.common.model.Status;
 import com.google.code.or.binlog.BinlogEventV4;
 
@@ -42,5 +43,6 @@ public class CDCInstanceListener extends AbstractInstanceListener {
         
         //更新position
         PositionKeeper.setPosition(event.getHeader().getPosition());
+        PositionKeeper.setBinlogName(TableInfoKeeper.getBinlogName());
     }
 }

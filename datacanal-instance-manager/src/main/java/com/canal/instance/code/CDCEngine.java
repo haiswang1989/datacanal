@@ -26,6 +26,7 @@ import com.datacanal.common.constant.Consts;
 import com.datacanal.common.model.BinlogMasterStatus;
 import com.datacanal.common.model.DbInfo;
 import com.datacanal.common.model.DbNode;
+import com.datacanal.common.model.PositionRequest;
 import com.datacanal.common.model.Status;
 import com.datacanal.common.util.ZkUtil;
 import com.google.code.or.OpenReplicator;
@@ -42,7 +43,7 @@ import com.google.code.or.OpenReplicator;
 public class CDCEngine {
     
     public static final Logger LOG = LoggerFactory.getLogger(CDCEngine.class);
-
+    
     @Autowired
     private CDCInstanceListener listener;
     
@@ -67,6 +68,10 @@ public class CDCEngine {
     
     //任务的zk目录
     private String taskNodePath;
+    
+    //当前使用的DbNode
+    private DbNode currDbNode;
+    
     
     /**
      * java CDCEngine ${taskNodePath} 
@@ -129,9 +134,9 @@ public class CDCEngine {
         String jsonString = zkClient.readData(taskNodePath);
         DbInfo dbInfo = JSON.parseObject(jsonString, DbInfo.class);
         DbNode useDbNode = getUseDbNode(dbInfo);
-        
+        this.currDbNode = useDbNode;
         immutableInit(dbInfo);
-        changableInit(useDbNode, false);
+        changableInit(useDbNode, false, PositionRequest.LATEST);
         
         //
         CommonKeeper.setEngine(engine);
@@ -154,15 +159,24 @@ public class CDCEngine {
     }
     
     /**
+     * 无参的初始化
+     * DbNode使用当前的DbNode
+     * 需要进行
+     */
+    public void changableInit() {
+        changableInit(this.currDbNode, true, PositionRequest.EARLIEST);
+    }
+    
+    /**
      * 如果出现slave切换,需要变化的部分信息的设置
      * @param useDbNode
      * @param reflashPosition
      */
-    public void changableInit(DbNode useDbNode, boolean reflashPosition) {
+    public void changableInit(DbNode useDbNode, boolean reflashPosition, PositionRequest positionRequest) {
         //初始化DB的信息
         initJdbc(useDbNode);
         //初始化dump binlog对象
-        initOpenReplicator(useDbNode, reflashPosition);
+        initOpenReplicator(useDbNode, reflashPosition, positionRequest);
         //设置抽取的binlog
         TableInfoKeeper.init(binlogFileName);
     }
@@ -183,7 +197,7 @@ public class CDCEngine {
      * @param useDbNode
      * @param reflashPosition 是否从数据库那最新的binlog的position信息 true:数据库拿 false:zk获取
      */
-    private void initOpenReplicator(DbNode useDbNode, boolean reflashPosition) {
+    private void initOpenReplicator(DbNode useDbNode, boolean reflashPosition, PositionRequest positionRequest) {
         openReplicator = new OpenReplicatorPlus(useDbNode.getHost(), useDbNode.getPort(), useDbNode.getDbName(), 
                 useDbNode.getUsername(), useDbNode.getPassword(), tryConnectTimeout);
         openReplicator.setUser(useDbNode.getUsername());
@@ -195,8 +209,11 @@ public class CDCEngine {
         BinlogMasterStatus binlogMasterStatus = DbMetadata.getBinlongMasterStatus();
         openReplicator.setBinlogFileName(binlogMasterStatus.getBinlogName());
         if(PositionKeeper.getPosition() == 0l || reflashPosition) { 
-            //如果postion是一个初始化的状态,那么直接用从数据库中获取到的position
-            openReplicator.setBinlogPosition(binlogMasterStatus.getPosition());
+            if(positionRequest == PositionRequest.EARLIEST) {
+                openReplicator.setBinlogPosition(Consts.EARLIEST_POSITION);
+            } else {
+                openReplicator.setBinlogPosition(binlogMasterStatus.getPosition());
+            }
         } else { //否则使用zookeeper上的position
             openReplicator.setBinlogPosition(PositionKeeper.getPosition());
         }

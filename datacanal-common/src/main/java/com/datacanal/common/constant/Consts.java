@@ -32,4 +32,7 @@ public class Consts {
     //
     public static final String DATACANAL_TASK_POSITION = "position";
     
+    //position的最小值
+    public static final long EARLIEST_POSITION = 4L;
+    
 }

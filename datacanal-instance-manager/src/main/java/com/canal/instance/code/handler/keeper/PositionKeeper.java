@@ -23,6 +23,10 @@ public class PositionKeeper {
     @Getter
     private static volatile long position = 0l;
     
+    @Getter
+    @Setter
+    private static volatile String binlogName = null;
+    
     @Setter
     private static int positionSyncZkPeriod;
     

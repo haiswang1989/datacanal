@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import com.canal.instance.code.handler.keeper.CommonKeeper;
 import com.datacanal.common.model.DbNode;
+import com.datacanal.common.model.PositionRequest;
 import com.google.code.or.OpenReplicator;
 import com.google.code.or.binlog.BinlogParser;
 import com.google.code.or.binlog.BinlogParserListener;
@@ -75,21 +76,18 @@ public class OpenReplicatorPlus extends OpenReplicator {
         this.binlogParser.setBinlogFileName(this.binlogFileName);
 
         this.binlogParser.setEventListener(this.binlogEventListener);
-        this.binlogParser.addParserListener(new BinlogParserListenerPlus(tryConnectTimeout, this));
+        this.binlogParser.addParserListener(new BinlogParserListenerPlus(tryConnectTimeout));
         this.binlogParser.start();
     }
     
     class BinlogParserListenerPlus extends BinlogParserListener.Adapter {
         
-        private OpenReplicatorPlus openReplicatorPlus;
-        
         private long trySecond;
         
         private boolean canConnect;
         
-        public BinlogParserListenerPlus(long trySecondArg, OpenReplicatorPlus openReplicatorPlusArg) {
+        public BinlogParserListenerPlus(long trySecondArg) {
             this.trySecond = trySecondArg;
-            this.openReplicatorPlus = openReplicatorPlusArg;
         }
         
         @Override
@@ -138,7 +136,14 @@ public class OpenReplicatorPlus extends OpenReplicator {
                 //连接已经恢复,重新启动(不管是master或者是slave)
                 LOG.info("Try to restart.");
                 try {
-                    openReplicatorPlus.start();
+                    //1:master重连成功,可能情况
+                    //1.1:原master启动失败,由他的slave添加原master的IP来充当新的master
+                    //1.2:原master启动成功,还是由他充当master
+                    //2:slave重连成功
+                    //不管是哪种情况,抽取的binlog的文件的名称肯定切换
+                    CDCEngine engine = CommonKeeper.getEngine();
+                    engine.changableInit();
+                    engine.start();
                 } catch (Exception e) {
                     LOG.error("Restart failed", e);
                     System.exit(-1);
@@ -158,7 +163,7 @@ public class OpenReplicatorPlus extends OpenReplicator {
                     LOG.info("Try restart on [{}]", dbNode.toString());
                     
                     try {
-                        engine.changableInit(dbNode, true);
+                        engine.changableInit(dbNode, true, PositionRequest.EARLIEST);
                     } catch(Exception e) {
                         LOG.error(e.getMessage(), e);
                         continue;
