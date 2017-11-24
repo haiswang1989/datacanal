@@ -40,7 +40,7 @@ public class ZkUtilTest {
         slaves.add(slave1);
         slaves.add(slave2);
         
-        DbInfo dbInfo = new DbInfo(master, slaves, sensitiveTables, "/datacanal/task/person/person-1", true);
+        DbInfo dbInfo = new DbInfo(master, slaves, sensitiveTables, "/datacanal/task/person/person-1", false);
         
         
         String path = "/datacanal/task/person/person-1";
