@@ -1,6 +1,7 @@
 package com.datacanal.common.util;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -13,7 +14,6 @@ import org.testng.annotations.Test;
 import com.alibaba.fastjson.JSON;
 import com.datacanal.common.model.DbInfo;
 import com.datacanal.common.model.DbNode;
-import com.datacanal.common.model.Status;
 
 public class ZkUtilTest {
     
@@ -63,6 +63,10 @@ public class ZkUtilTest {
     @Test
     public void testExecCmd() {
         CommonUtils.doExecCmd("dir");
+        
+        HashMap<String, String> map = new HashMap<>();
+        map.hashCode();
+        
     }
     
     @Test
